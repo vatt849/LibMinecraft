@@ -225,6 +225,29 @@ namespace LibMinecraft.Model.Entities
         }
 
         /// <summary>
+        /// Is the bed occupied
+        /// </summary>
+        private Vector3 _OccupiedBed;
+        public Vector3 OccupiedBed
+        {
+            get
+            {
+                return _OccupiedBed;
+            }
+            set
+            {
+                if (!Equals(_OccupiedBed, value) && PropertyChanged != null)
+                {
+                    _OccupiedBed = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("OccupiedBed"));
+                }
+                else
+                    _OccupiedBed = value;
+            }
+        }
+
+
+        /// <summary>
         /// Gets the item currently held
         /// </summary>
         public Slot InHand

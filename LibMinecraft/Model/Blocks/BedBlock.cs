@@ -27,6 +27,9 @@ namespace LibMinecraft.Model.Blocks
             // Get facing
             facing = MathHelper.DirectionByRotationFlat(placedBy);
             Vector3 secondHalf = position.Clone();
+
+            byte occupied = 0x4;
+
             switch ((Directions)facing)
             {
                 case Directions.North:
@@ -63,9 +66,24 @@ namespace LibMinecraft.Model.Blocks
         /// </summary>
         public override bool BlockRightClicked(World world, Vector3 position, Entities.PlayerEntity clickedBy)
         {
-            if ((MultiplayerServer.This.GetWorld(clickedBy).Level.Time % 24000) > 12000)
-                MultiplayerServer.This
-                    .EnqueueToAllClients(new Packets.UseBedPacket(position, clickedBy.ID));
+            if ((MultiplayerServer.This.GetWorld(clickedBy).Level.Time % 24000) > 12000) //If within proper time period
+            {
+                if ((this.Metadata & 0x4) != 0x4 && clickedBy.OccupiedBed == null)
+                { // If it isn't occupied
+                    MultiplayerServer.This
+                        .EnqueueToAllClients(new Packets.UseBedPacket(position, clickedBy.ID));
+                    this.Metadata = (byte)(this.Metadata & ~0x4);
+                    this.Metadata = (byte)(this.Metadata | 0x4); //Occupy it
+
+                    clickedBy.OccupiedBed = position;
+
+                    MultiplayerServer.This.GetWorld(clickedBy).SetBlock(position, this);
+                }
+                else
+                {
+                    MultiplayerServer.This.GetClient(clickedBy).SendChat("Sorry, the bed you are currently trying to use is occupied.");
+                }
+            }
             else
                 MultiplayerServer.This.GetClient(clickedBy).SendChat("Sorry, beds can only be used during the night.");
             return false;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using LibMinecraft.Server;
 using LibMinecraft.Client;
+using LibMinecraft.Model.Blocks;
 
 namespace LibMinecraft.Model.Packets
 {
@@ -122,11 +123,18 @@ namespace LibMinecraft.Model.Packets
                     c.PacketQueue.Enqueue(new AnimationPacket(Client.PlayerEntity.ID, animation));
                 }
             }
-
             if (Action == EntityAction.LeaveBed)
             {
+                //Unoccupy the metadata of the block
+                Block bed = Server.GetWorld(Client.PlayerEntity).GetBlock(Client.PlayerEntity.OccupiedBed); //Get the block
+                bed.Metadata = (byte)(bed.Metadata & ~0x4); // Remove flag
+                Server.GetWorld(Client.PlayerEntity).SetBlock(Client.PlayerEntity.OccupiedBed, bed); //Set block
+
+                Client.PlayerEntity.OccupiedBed = null; //Nullify the clients bed position
+
                 Server.EnqueueToAllClients(new AnimationPacket(Client.PlayerEntity.ID, Animation.LeaveBed));
             }
+
         }
 
         /// <summary>

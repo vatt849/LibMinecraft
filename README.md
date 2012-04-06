@@ -50,6 +50,6 @@ You can get Minecraft at [minecraft.net](http://minecraft.net)
 
 LibMinecraft depends on [SharpZipLib](http://www.icsharpcode.net/OpenSource/SharpZipLib/Default.aspx) and [LibNBT](https://github.com/aphistic/libnbt).
 
-Our documentation was created with the help of [GhostDoc](http://submain.com/products/ghostdoc.aspx, who graciously provided all of our developers with free licenses.
+Our documentation was created with the help of [GhostDoc](http://submain.com/products/ghostdoc.aspx), who graciously provided all of our developers with free licenses.
 
 LibMinecraft is not affiliated with or endorsed by Mojang.

@@ -1,0 +1,8 @@
+# Output files
+*/bin
+*/obj
+~/TestResults
+
+# User-specific files
+*.suo
+*.user

@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="LibMinecraft.Client.MultiplayerClient">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <Members>
+      <Field Name="_currentServer" Hidden="true" />
+      <Field Name="_entities" Hidden="true" />
+      <Field Name="_world" Hidden="true" />
+      <Field Name="count" Hidden="true" />
+      <Method Name="DoWork" Hidden="true" />
+      <Method Name="DumpArray" Hidden="true" />
+      <Field Name="FirstTimeLookPosition" Hidden="true" />
+      <Field Name="itemid" Hidden="true" />
+      <Field Name="length" Hidden="true" />
+      <Field Name="lockObject" Hidden="true" />
+      <Method Name="Log" Hidden="true" />
+      <Field Name="msg" Hidden="true" />
+      <Method Name="MultiplayerClient" Hidden="true" />
+      <Field Name="netSocket" Hidden="true" />
+      <Field Name="netStream" Hidden="true" />
+      <Field Name="ProtocolVersion" Hidden="true" />
+      <Method Name="Read" Hidden="true" />
+      <Method Name="ReadBoolean" Hidden="true" />
+      <Method Name="ReadBytes" Hidden="true" />
+      <Method Name="ReadDouble" Hidden="true" />
+      <Method Name="ReadFloat" Hidden="true" />
+      <Method Name="ReadInt" Hidden="true" />
+      <Method Name="ReadLong" Hidden="true" />
+      <Method Name="ReadNBT" Hidden="true" />
+      <Method Name="ReadShort" Hidden="true" />
+      <Method Name="ReadString" Hidden="true" />
+      <Method Name="ReadVector3" Hidden="true" />
+      <Field Name="s" Hidden="true" />
+      <Method Name="SendDisconnect" Hidden="true" />
+      <Method Name="SendHandshake" Hidden="true" />
+      <Method Name="SendLogin" Hidden="true" />
+      <Method Name="SendPlayerPositionAndLook" Hidden="true" />
+      <Field Name="size" Hidden="true" />
+      <Field Name="user" Hidden="true" />
+      <Field Name="worker" Hidden="true" />
+      <Method Name="WriteBoolean" Hidden="true" />
+      <Method Name="WriteBytes" Hidden="true" />
+      <Method Name="WriteDouble" Hidden="true" />
+      <Method Name="WriteFloat" Hidden="true" />
+      <Method Name="WriteInt" Hidden="true" />
+      <Method Name="WriteLong" Hidden="true" />
+      <Method Name="WriteShort" Hidden="true" />
+      <Method Name="WriteString" Hidden="true" />
+      <Method Name="WriteVector3" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>ABYAAgAFABUYUCEQJ8AUgIAwbKhACVokIIcCgQAADUQ=</HashCode>
+      <FileName>Client\MultiplayerClient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LibMinecraft.Client.ServerMessageEventArgs" Collapsed="true">
+    <Position X="2.75" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Client\MultiplayerClient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LibMinecraft.Client.HealthUpdateEventArgs" Collapsed="true">
+    <Position X="2.75" Y="1.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Client\MultiplayerClient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LibMinecraft.Client.HungerUpdateEventArgs" Collapsed="true">
+    <Position X="2.75" Y="2" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAQAAAAAAAIAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Client\MultiplayerClient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LibMinecraft.Client.ChatEventArgs" Collapsed="true">
+    <Position X="2.75" Y="2.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAEAAAAAAAAQAAIAAAAAA=</HashCode>
+      <FileName>Client\MultiplayerClient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

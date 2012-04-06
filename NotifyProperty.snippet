@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Notify Property</Title>
+      <Shortcut>nprop</Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <Default>object</Default>
+          <ID>propType</ID>
+        </Literal>
+        <Literal>
+          <Default>Property</Default>
+          <ID>propName</ID>
+        </Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[private $propType$ _$propName$;
+        public $propType$ $propName$ 
+        {
+            get
+            {
+                return _$propName$;
+            }
+            set
+            {
+                if (!Equals(_$propName$, value) && PropertyChanged != null)
+                {
+                    _$propName$ = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("$propName$"));
+                }
+                else
+                    _$propName$ = value;
+            }
+        }]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

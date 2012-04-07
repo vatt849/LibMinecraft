@@ -925,6 +925,10 @@ namespace LibMinecraft.Server
                     break;
                 case "Inventory":
                     break;
+                case "OccupiedBed": //TODO: TELEPORT THE PLAYER AND SHITNIZZLE
+                    if(client.PlayerEntity.OccupiedBed != null)
+                        EnqueueToAllClients(new UseBedPacket(client.PlayerEntity.OccupiedBed, client.PlayerEntity.ID));
+                    break;
             }
         }
 

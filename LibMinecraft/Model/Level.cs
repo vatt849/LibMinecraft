@@ -63,7 +63,7 @@ namespace LibMinecraft.Model
         }
 
 
-        internal long _Time;
+        internal long _Time; //TODO MAKE PROTECTED INTERNAL
         public long Time
         {
             get

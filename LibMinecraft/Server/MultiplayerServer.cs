@@ -438,6 +438,7 @@ namespace LibMinecraft.Server
         {
             Levels.Add(level);
             level.OnBlockChange += new EventHandler<BlockChangeEventArgs>(level_OnBlockChange);
+            level.PropertyChanged += new PropertyChangedEventHandler(level_PropertyChanged);
         }
 
         #endregion
@@ -487,7 +488,7 @@ namespace LibMinecraft.Server
             ticksSinceSave++;
             foreach (Level l in Levels)
             {
-                l.Time++; // TODO: Further updates
+                l._Time++; // TODO: Further updates FINISHED
             }
             if (ticksSinceSave == SaveFrequency)
                 ticksSinceSave = 0;
@@ -722,6 +723,7 @@ namespace LibMinecraft.Server
                    select c;
         }
 
+        
         /// <summary>
         /// Gets all RemoteClients in a given world, except for the specified client.
         /// </summary>
@@ -736,6 +738,21 @@ namespace LibMinecraft.Server
                    && c.PlayerEntity.Name.ToLower() != Except.PlayerEntity.Name.ToLower()
                    select c;
         }
+
+
+        public IEnumerable<RemoteClient> GetClientsInLevel(Level l)
+        {
+             List<RemoteClient> clients =  new List<RemoteClient>();
+
+             clients.AddRange(GetClientsInWorld(l.TheEnd));
+             clients.AddRange(GetClientsInWorld(l.Overworld));
+             clients.AddRange(GetClientsInWorld(l.Nether));
+
+             return from c in GetLoggedInClients()
+                    where clients.Contains(c)
+                    select c;
+        }
+
 
         /// <summary>
         /// Gets the world a given remote client is currently in.
@@ -851,9 +868,26 @@ namespace LibMinecraft.Server
 
         void level_OnBlockChange(object sender, BlockChangeEventArgs e)
         {
-            foreach (RemoteClient r in GetClientsInWorld(sender as World))
+            foreach (RemoteClient r in GetClientsInWorld(sender as World)) // FIX THIS
                 r.PacketQueue.Enqueue(new BlockChangePacket(e.Position, e.Block));
         }
+
+        void level_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Level level = (sender as Level);
+            switch (e.PropertyName)
+            {
+                case "Time":
+                    foreach (RemoteClient r in GetClientsInLevel(level))
+                    {
+                        r.PacketQueue.Enqueue(new TimeUpdatePacket((level.Time)));
+                    }
+
+
+                    break;
+            }
+        }
+
 
         /// <summary>
         /// Handles the PropertyChanged event of the PlayerEntity control.

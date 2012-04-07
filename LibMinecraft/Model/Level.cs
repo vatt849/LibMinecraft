@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LibMinecraft.Model.Blocks;
+using System.ComponentModel;
 
 namespace LibMinecraft.Model
 {
-    public class Level
+    public class Level : INotifyPropertyChanged
     {
+
         public World Overworld { get; set; }
         public World Nether { get; set; }
         public World TheEnd { get; set; }
@@ -21,10 +23,64 @@ namespace LibMinecraft.Model
 
         public Vector3 Spawn { get; set; }
         public int Version { get; set; }
-        public DateTime LastPlayed { get; set; }
 
-        public long Seed { get; set; }
-        public long Time { get; set; }
+        private DateTime _LastPlayed;
+        public DateTime LastPlayed
+        {
+            get
+            {
+                return _LastPlayed;
+            }
+            set
+            {
+                if (!Equals(_LastPlayed, value) && PropertyChanged != null)
+                {
+                    _LastPlayed = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("LastPlayed"));
+                }
+                else
+                    _LastPlayed = value;
+            }
+        }
+
+        private long _Seed;
+        public long Seed
+        {
+            get
+            {
+                return _Seed;
+            }
+            set
+            {
+                if (!Equals(_Seed, value) && PropertyChanged != null)
+                {
+                    _Seed = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("Seed"));
+                }
+                else
+                    _Seed = value;
+            }
+        }
+
+
+        internal long _Time;
+        public long Time
+        {
+            get
+            {
+                return _Time;
+            }
+            set
+            {
+                if (!Equals(_Time, value) && PropertyChanged != null)
+                {
+                    _Time = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("Time"));
+                }
+                else
+                    _Time = value;
+            }
+        }
 
         public IWorldGenerator WorldGenerator { get; set; }
         public string Name { get; set; }
@@ -113,5 +169,7 @@ namespace LibMinecraft.Model
                     return TheEnd;
             }
         }
+    
+        public event PropertyChangedEventHandler  PropertyChanged;
     }
 }

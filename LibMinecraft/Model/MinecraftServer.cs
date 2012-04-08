@@ -254,28 +254,4 @@ namespace LibMinecraft.Model
         }
         #endregion
     }
-
-    /// <summary>
-    /// The diffulties available
-    /// </summary>
-    /// <remarks></remarks>
-    public enum Difficulty
-    {
-        /// <summary>
-        /// No hostile mobs and health regeneration
-        /// </summary>
-        Peaceful = 0,
-        /// <summary>
-        /// Small amount of hostile mobs and lowest health for hostile mobs
-        /// </summary>
-        Easy = 1,
-        /// <summary>
-        /// Average amount of hostile mobs and normal health for hostile mobs
-        /// </summary>
-        Normal = 2,
-        /// <summary>
-        /// Hardest level, most hostile mobs and highest health for hostile mobs
-        /// </summary>
-        Hard = 3,
-    }
 }

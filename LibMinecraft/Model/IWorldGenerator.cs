@@ -20,6 +20,8 @@ namespace LibMinecraft.Model
 
         int Version { get; }
 
+        bool GenerateStructures { get; set; }
+
         /// <summary>
         /// Generates a chunk.
         /// </summary>

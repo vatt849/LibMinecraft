@@ -24,6 +24,8 @@ namespace LibMinecraft.Model
 
         public int Version { get { return 1; } }
 
+        public bool GenerateStructures { get { return false; } set { } }
+
         /// <summary>
         /// Generates a chunk.
         /// </summary>

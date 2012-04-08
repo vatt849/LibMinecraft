@@ -375,9 +375,10 @@ namespace LibMinecraft.Server
         /// </summary>
         /// <param name="Location">The location to spawn lightning.</param>
         /// <remarks></remarks>
-        public virtual void CreateLightning(Vector3 Location)
+        public virtual void CreateLightning(Vector3 Location, World world)
         {
-            EnqueueToAllClients(new ThunderboltPacket(NextEntityID, Location));
+            foreach (RemoteClient r in GetClientsInWorld(world))
+                r.PacketQueue.Enqueue(new ThunderboltPacket(NextEntityID++, Location));
         }
 
         /// <summary>
@@ -407,14 +408,13 @@ namespace LibMinecraft.Server
         /// <summary>
         /// Sets the weather in a specific world.
         /// </summary>
-        /// <param name="On">If the weather is on</param>
+        /// <param name="Enabled">If the weather is on</param>
         /// <param name="World">The world to set the weather in.</param>
-        public virtual void SetWeatherInWorld(bool On, World World)
+        public virtual void SetWeather(bool Enabled, World World)
         {
-            // TODO
             foreach (RemoteClient r in GetClientsInWorld(World))
             {
-                r.PacketQueue.Enqueue(new NewOrInvalidStatePacket(On ? NewOrInvalidState.BeginRain : NewOrInvalidState.EndRain));
+                r.PacketQueue.Enqueue(new NewOrInvalidStatePacket(Enabled ? NewOrInvalidState.BeginRain : NewOrInvalidState.EndRain));
             }
         }
 
@@ -495,6 +495,7 @@ namespace LibMinecraft.Server
             foreach (Level l in Levels)
             {
                 l._Time++;
+                l.WeatherManager.Tick(l, this);
                 foreach (World w in l.Worlds)
                 {
                     w.UpdateEntities();

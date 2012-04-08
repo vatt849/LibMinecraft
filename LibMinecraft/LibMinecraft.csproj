@@ -416,7 +416,6 @@
     <Compile Include="Model\Blocks\ScheduledBlockUpdate.cs" />
     <Compile Include="Model\Region.cs" />
     <Compile Include="Model\ScheduledUpdateManager.cs" />
-    <Compile Include="Model\ScheduledWorldWeatherUpdate.cs" />
     <Compile Include="Model\Slot.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Model\Vector3.cs" />
@@ -428,6 +427,7 @@
     <Compile Include="Server\RemoteClient.cs" />
     <Compile Include="Model\Blocks\NoteBlock.cs" />
     <Compile Include="Model\Blocks\ClayBlock.cs" />
+    <Compile Include="Server\WeatherManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

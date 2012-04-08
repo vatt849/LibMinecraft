@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using LibMinecraft.Model.Blocks;
 using System.ComponentModel;
+using System.IO;
+using LibNbt;
+using LibNbt.Tags;
+using LibMinecraft.Server;
 
 namespace LibMinecraft.Model
 {
@@ -16,7 +20,7 @@ namespace LibMinecraft.Model
 
         public Difficulty Difficulty { get; set; }
         public bool MapFeatures { get; set; }
-        public bool WeatherEnabled { get; set; }
+        public WeatherManager WeatherManager { get; set; }
 
         public GameMode GameMode { get; set; }
         public int GeneratorVersion { get; set; }
@@ -84,6 +88,7 @@ namespace LibMinecraft.Model
 
         public IWorldGenerator WorldGenerator { get; set; }
         public string Name { get; set; }
+        public string SaveDirectory { get; set; }
 
         public List<PlayerData> Players { get; set; }
 
@@ -108,6 +113,38 @@ namespace LibMinecraft.Model
             Spawn = new Vector3(0, 17, 0);
 
             GameMode = GameMode.Creative;
+
+            WeatherManager = new WeatherManager();
+        }
+
+        public void Save(string SaveDirectory)
+        {
+            this.SaveDirectory = SaveDirectory;
+            Overworld.WorldDirectory = Path.Combine(SaveDirectory, "region");
+            if (!Directory.Exists(Path.Combine(SaveDirectory, "DIM1")))
+                Directory.CreateDirectory(Path.Combine(SaveDirectory, "DIM1"));
+            Nether.WorldDirectory = Path.Combine(SaveDirectory, "DIM1", "region");
+            if (!Directory.Exists(Path.Combine(SaveDirectory, "DIM-1")))
+                Directory.CreateDirectory(Path.Combine(SaveDirectory, "DIM-1"));
+            Nether.WorldDirectory = Path.Combine(SaveDirectory, "DIM-1", "region");
+
+            Save();
+        }
+
+        public void Save()
+        {
+            if (!Directory.Exists(SaveDirectory))
+                Directory.CreateDirectory(SaveDirectory);
+            if (!Directory.Exists(Path.Combine(SaveDirectory, "data")))
+                Directory.CreateDirectory(Path.Combine(SaveDirectory, "data"));
+            if (!Directory.Exists(Path.Combine(SaveDirectory, "players")))
+                Directory.CreateDirectory(Path.Combine(SaveDirectory, "players"));
+
+            NbtFile file = new NbtFile("level.dat");
+            file.RootTag = new NbtCompound("Data");
+            file.RootTag.Set("hardcore", new NbtByte((byte)(this.GameMode == GameMode.Hardcore ? 1 : 0)));
+            file.RootTag.Set("MapFeatures", new NbtByte((byte)(WorldGenerator.GenerateStructures ? 1 : 0)));
+            file.RootTag.Set("raining", new NbtByte((byte)(WeatherManager.WeatherOccuring ? 1 : 0)));
         }
 
         void World_OnBlockChange(object sender, BlockChangeEventArgs e)

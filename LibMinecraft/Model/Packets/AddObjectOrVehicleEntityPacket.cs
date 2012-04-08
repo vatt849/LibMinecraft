@@ -74,7 +74,7 @@ namespace LibMinecraft.Model.Packets
         /// <remarks></remarks>
         public override PacketID PacketID
         {
-            get { return PacketID.AddObjectOrVehicle; }
+            get { return PacketID.SpawnObjectOrVehicle; }
         }
 
         /// <summary>

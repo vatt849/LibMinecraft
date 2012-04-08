@@ -390,7 +390,7 @@ namespace LibMinecraft.Server
         public virtual void ChangePlayerMode(string Name, GameMode Mode)
         {
             RemoteClient r = ConnectedClients.Where(c => c.LoggedIn && c.PlayerEntity.Name.ToLower() == Name.ToLower()).First();
-            r.PacketQueue.Enqueue(new NewOrInvalidStatePacket(NewOrInvalidState.ChangeGameMode, Mode == GameMode.Creative));
+            r.PacketQueue.Enqueue(new ChangeGameStatePacket(NewOrInvalidState.ChangeGameMode, Mode == GameMode.Creative));
         }
 
         /// <summary>
@@ -414,7 +414,7 @@ namespace LibMinecraft.Server
         {
             foreach (RemoteClient r in GetClientsInWorld(World))
             {
-                r.PacketQueue.Enqueue(new NewOrInvalidStatePacket(Enabled ? NewOrInvalidState.BeginRain : NewOrInvalidState.EndRain));
+                r.PacketQueue.Enqueue(new ChangeGameStatePacket(Enabled ? NewOrInvalidState.BeginRain : NewOrInvalidState.EndRain));
             }
         }
 
@@ -426,7 +426,7 @@ namespace LibMinecraft.Server
         public virtual void ShowCredits(string PlayerName)
         {
             RemoteClient r = ConnectedClients.Where(c => c.LoggedIn && c.PlayerEntity.Name.ToLower() == PlayerName.ToLower()).First();
-            r.PacketQueue.Enqueue(new NewOrInvalidStatePacket(NewOrInvalidState.EnterCredits));
+            r.PacketQueue.Enqueue(new ChangeGameStatePacket(NewOrInvalidState.EnterCredits));
         }
 
         /// <summary>
@@ -960,7 +960,7 @@ namespace LibMinecraft.Server
                     client.PacketQueue.Enqueue(new PlayerPositionAndLookPacket(client.PlayerEntity));
                     break;
                 case "GameMode":
-                    client.PacketQueue.Enqueue(new NewOrInvalidStatePacket(NewOrInvalidState.ChangeGameMode,
+                    client.PacketQueue.Enqueue(new ChangeGameStatePacket(NewOrInvalidState.ChangeGameMode,
                         client.PlayerEntity.GameMode == GameMode.Creative));
                     break;
                 case "Inventory":

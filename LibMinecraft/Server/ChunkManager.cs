@@ -66,9 +66,9 @@ namespace LibMinecraft.Server
         /// <remarks></remarks>
         public static void LoadColumnOnClient(RemoteClient Client, Vector3 ColumnLocation, MultiplayerServer Server)
         {
-            Client.PacketQueue.Enqueue(new PreChunkPacket(ColumnLocation.X, ColumnLocation.Z));
+            Client.PacketQueue.Enqueue(new MapColumnAllocationPacket(ColumnLocation.X, ColumnLocation.Z));
 
-            MapChunkPacket mcp = new MapChunkPacket();
+            MapChunksPacket mcp = new MapChunksPacket();
             MapColumn mc = Server.GetWorld(Client).GetColumn(ColumnLocation);
             mcp.GroundUpContinuous = true;
             mcp.BiomeData = mc.Biomes;
@@ -146,7 +146,7 @@ namespace LibMinecraft.Server
         /// <remarks></remarks>
         public static void UnloadColumnOnClient(RemoteClient Client, Vector3 ColumnLocation, MultiplayerServer Server)
         {
-            Client.PacketQueue.Enqueue(new PreChunkPacket(ColumnLocation.X, ColumnLocation.Z, true));
+            Client.PacketQueue.Enqueue(new MapColumnAllocationPacket(ColumnLocation.X, ColumnLocation.Z, true));
             Client.PlayerEntity.LoadedColumns.Remove(ColumnLocation);
         }
     }

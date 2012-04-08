@@ -350,11 +350,11 @@ namespace LibMinecraft.Client
                                     short damage = ReadShort(netStream);
                                 }
                                 break;
-                            case PacketID.HoldingChange: ReadBytes(netStream, 2); break;
+                            case PacketID.HeldItemChange: ReadBytes(netStream, 2); break;
                             case PacketID.UseBed: ReadBytes(netStream, 14); break;
                             case PacketID.Animation: ReadBytes(netStream, 5); break;
                             case PacketID.EntityAction: ReadBytes(netStream, 5); break;
-                            case PacketID.NamedEntitySpawn:
+                            case PacketID.SpawnNamedEntity:
                                 ReadInt(netStream);
                                 ReadString(netStream);
                                 ReadInt(netStream);
@@ -363,9 +363,9 @@ namespace LibMinecraft.Client
                                 ReadBytes(netStream, 2);
                                 ReadShort(netStream);
                                 break;
-                            case PacketID.PickupSpawn: ReadBytes(netStream, 24); break;
+                            case PacketID.SpawnDroppedItem: ReadBytes(netStream, 24); break;
                             case PacketID.CollectItem: ReadBytes(netStream, 8); break;
-                            case PacketID.AddObjectOrVehicle:
+                            case PacketID.SpawnObjectOrVehicle:
                                 int eid = ReadInt(netStream);
                                 byte type = (byte)netStream.ReadByte();
                                 Vector3 pos = ReadVector3(netStream);
@@ -373,11 +373,11 @@ namespace LibMinecraft.Client
                                 if (fireID > 0)
                                     ReadVector3(netStream);
                                 break;
-                            case PacketID.MobSpawn:
+                            case PacketID.SpawnMob:
                                 ReadBytes(netStream, 19);
                                 while ((byte)netStream.ReadByte() != 0x7f) { } // Metadata
                                 break;
-                            case PacketID.EntityPainting:
+                            case PacketID.SpawnPainting:
                                 ReadInt(netStream);
                                 ReadString(netStream);
                                 ReadInt(netStream);
@@ -385,8 +385,7 @@ namespace LibMinecraft.Client
                                 ReadInt(netStream);
                                 ReadInt(netStream);
                                 break;
-                            case PacketID.ExperienceOrb: ReadBytes(netStream, 18); break;
-                            case PacketID.StanceUpdate: ReadBytes(netStream, 18); break;
+                            case PacketID.SpawnExperienceOrb: ReadBytes(netStream, 18); break
                             case PacketID.EntityVelocity: ReadBytes(netStream, 10); break;
                             case PacketID.DestroyEntity: ReadBytes(netStream, 4); break;
                             case PacketID.Entity: ReadBytes(netStream, 4); break;
@@ -406,8 +405,8 @@ namespace LibMinecraft.Client
                                 break;
                             case PacketID.EntityEffect: ReadBytes(netStream, 8); break;
                             case PacketID.RemoveEntityEffect: ReadBytes(netStream, 5); break;
-                            case PacketID.Experience: ReadBytes(netStream, 8); break;
-                            case PacketID.PreChunk:
+                            case PacketID.SetExperience: ReadBytes(netStream, 8); break;
+                            case PacketID.MapColumnAllocation:
                               
                                     var chunkPos = new Vector3()
                                                        {
@@ -426,7 +425,7 @@ namespace LibMinecraft.Client
                                     }
                                 
                                 break;
-                            case PacketID.MapChunk:
+                            case PacketID.MapChunks:
                               
                                      chunkPos = new Vector3();
                                     chunkPos.X = ReadInt(netStream);
@@ -502,7 +501,7 @@ namespace LibMinecraft.Client
                                 ReadBytes(netStream, count * 3);
                                 break;
                             case PacketID.SoundOrParticleEffect: ReadBytes(netStream, 17); break;
-                            case PacketID.NewOrInvalidState: ReadBytes(netStream, 2); break;
+                            case PacketID.ChangeGameState: ReadBytes(netStream, 2); break;
                             case PacketID.Thunderbolt: ReadBytes(netStream, 17); break;
                             case PacketID.OpenWindow:
                                 netStream.ReadByte();
@@ -520,7 +519,7 @@ namespace LibMinecraft.Client
                                     ReadShort(netStream);
                                 }
                                 break;
-                            case PacketID.WindowItems:
+                            case PacketID.SetWindowItems:
                                 netStream.ReadByte(); // Window ID
                                 short c = ReadShort(netStream); // Count
                                 for (int i = 0; i < c; i++) // Payload
@@ -533,8 +532,8 @@ namespace LibMinecraft.Client
                                     }
                                 }
                                 break;
-                            case PacketID.UpdateProgressBar: ReadBytes(netStream, 5); break;
-                            case PacketID.Transaction: ReadBytes(netStream, 4); break;
+                            case PacketID.UpdateWindowProperty: ReadBytes(netStream, 5); break;
+                            case PacketID.ConfirmTransaction: ReadBytes(netStream, 4); break;
                             case PacketID.CreativeInventoryAction: ReadBytes(netStream, 8); break;
                             case PacketID.UpdateSign:
                                 ReadInt(netStream);

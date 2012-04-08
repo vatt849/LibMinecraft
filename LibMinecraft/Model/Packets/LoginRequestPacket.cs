@@ -233,17 +233,19 @@ namespace LibMinecraft.Model.Packets
             Server.GetWorld(client).AddEntity(client.PlayerEntity);
             foreach (RemoteClient c in Server.GetClientsInWorldExcept(Server.GetWorld(client), client))
             {
-                c.PacketQueue.Enqueue(new NamedEntitySpawnPacket(client.PlayerEntity.ID, client.PlayerEntity.Name,
+                c.PacketQueue.Enqueue(new SpawnNamedEntityPacket(client.PlayerEntity.ID, client.PlayerEntity.Name,
                     client.PlayerEntity.Location, client.PlayerEntity.Rotation, client.PlayerEntity.InHand.ID));
                 c.PacketQueue.Enqueue(new EntityPacket());
 
-                client.PacketQueue.Enqueue(new NamedEntitySpawnPacket(c.PlayerEntity.ID, c.PlayerEntity.Name,
+                client.PacketQueue.Enqueue(new SpawnNamedEntityPacket(c.PlayerEntity.ID, c.PlayerEntity.Name,
                     c.PlayerEntity.Location, c.PlayerEntity.Rotation, c.PlayerEntity.InHand.ID));
             }
             client.PacketQueue.Enqueue(new TimeUpdatePacket(Server.Levels[client.PlayerEntity.LevelIndex].Time));
 
             if (Server.GetLevel(client).WeatherManager.WeatherOccuring)
-                client.PacketQueue.Enqueue(new NewOrInvalidStatePacket(NewOrInvalidState.BeginRain));
+                client.PacketQueue.Enqueue(new ChangeGameStatePacket(NewOrInvalidState.BeginRain));
+
+            
         }
 
         /// <summary>

@@ -34,11 +34,11 @@ namespace LibMinecraft.Model.Packets
             typeof(PlayerPositionAndLookPacket), // 0x0d
             typeof(PlayerDiggingPacket), // 0x0e
             typeof(PlayerBlockPlacementPacket), // 0x0f
-            typeof(HoldingChangePacket), // 0x10
+            typeof(HeldItemChangePacket), // 0x10
             typeof(InvalidPacket), // 0x11
             typeof(AnimationPacket), // 0x12
             typeof(EntityActionPacket), // 0x13
-            typeof(NamedEntitySpawnPacket), // 0x14
+            typeof(SpawnNamedEntityPacket), // 0x14
             typeof(InvalidPacket), // 0x15
             typeof(InvalidPacket), // 0x16
             typeof(AddObjectOrVehicleEntityPacket), // 0x17
@@ -68,8 +68,8 @@ namespace LibMinecraft.Model.Packets
             typeof(InvalidPacket), // 0x2f
             typeof(InvalidPacket), // 0x30
             typeof(InvalidPacket), // 0x31
-            typeof(PreChunkPacket), // 0x32
-            typeof(MapChunkPacket), // 0x33
+            typeof(MapColumnAllocationPacket), // 0x32
+            typeof(MapChunksPacket), // 0x33
             typeof(InvalidPacket), // 0x34
             typeof(BlockChangePacket), // 0x35
             typeof(InvalidPacket), // 0x36

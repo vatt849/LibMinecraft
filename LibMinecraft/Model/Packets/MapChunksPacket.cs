@@ -90,7 +90,7 @@ namespace LibMinecraft.Model.Packets
         /// <remarks></remarks>
         public override byte[] Payload
         {
-            get 
+            get
             {
                 return new byte[] { (byte)PacketID.MapChunks }
                     .Concat(MakeInt((int)(Location.X / 16)))

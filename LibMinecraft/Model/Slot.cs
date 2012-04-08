@@ -142,6 +142,30 @@ namespace LibMinecraft.Model
         }
 
         /// <summary>
+        /// Gets the slot data.
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public byte[] GetFullData()
+        {
+            byte[] data = new byte[0]
+                .Concat(Packet.MakeShort(ID)).ToArray();
+            data = data.Concat(new byte[] { Count })
+                .Concat(Packet.MakeShort(Metadata)).ToArray();
+
+            if (CanEnchant(ID))
+            {
+                MemoryStream ms = new MemoryStream();
+                GZipStream gzs = new GZipStream(ms, CompressionMode.Compress, false);
+                Nbt.SaveFile(gzs);
+                gzs.Close();
+                byte[] b = ms.GetBuffer();
+                data = data.Concat(Packet.MakeShort((short)b.Length)).Concat(b).ToArray();
+            }
+            return data;
+        }
+
+        /// <summary>
         /// Determines whether this instance can enchant the specified value.
         /// </summary>
         /// <param name="value">The value.</param>

@@ -13,6 +13,7 @@ namespace LibMinecraft.Model.Entities
         public const short ArmorOffset = 5;
         public const short InventoryOffset = 9;
         public const short HotbarOffset = 36;
+        public const short InventoryLength = 45;
 
         public PlayerEntity() : base()
         {
@@ -22,10 +23,10 @@ namespace LibMinecraft.Model.Entities
             Rotation = new Vector3();
             MapLoadRadius = 3;
             MapLoadRadiusDueTime = 50;
-            SelectedSlot = 10;
+            SelectedSlot = HotbarOffset;
             Inventory = new Slot[45];
             for (int i = 0; i < Inventory.Length; i++)
-                Inventory[i] = new Slot();
+                Inventory[i] = new Slot(-1, 1);
         }
 
         public bool Sleeping { get; set; }
@@ -208,6 +209,14 @@ namespace LibMinecraft.Model.Entities
                 }
                 else
                     _SelectedSlot = value;
+            }
+        }
+
+        public Slot SelectedItem 
+        {
+            get
+            {
+                return Inventory[SelectedSlot];
             }
         }
 

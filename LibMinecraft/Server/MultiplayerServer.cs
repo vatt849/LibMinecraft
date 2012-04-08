@@ -543,6 +543,7 @@ namespace LibMinecraft.Server
                             foreach (RemoteClient c in GetClientsInWorldExcept(GetWorld(client), client))
                                 c.PacketQueue.Enqueue(new DestroyEntityPacket(client.PlayerEntity.ID));
                             GetWorld(client).RemoveEntity(client.PlayerEntity.ID);
+                            GetLevel(client).SavePlayer(client);
                             if (OnPlayerLeave != null)
                                 OnPlayerLeave(this, new PlayerEventArgs(client));
                         }
@@ -565,7 +566,7 @@ namespace LibMinecraft.Server
                             packet.ReadPacket(client);
                             packet.HandlePacket(this, client);
                             client.LogPacket(packet);
-                            LogPacket(packet, client, true);
+                            //LogPacket(packet, client, true);
 
                             // Special packet event handlers
                             if (packet is LoginRequestPacket && client.LoggedIn)
@@ -649,18 +650,21 @@ namespace LibMinecraft.Server
                             }
                             catch (InvalidOperationException e)
                             {
+                                LogPacket(packet, client, false);
                                 Log(e.ToString());
                                 client.PacketQueue.Clear();
                                 break;
                             }
                             catch (IOException e)
                             {
+                                LogPacket(packet, client, false);
                                 Log(e.ToString());
                                 client.PacketQueue.Clear();
                                 break;
                             }
                             catch (Exception e)
                             {
+                                LogPacket(packet, client, false);
                                 Log(e.ToString());
                             }
                             if (packet.PacketID == PacketID.Disconnect)

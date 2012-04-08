@@ -72,7 +72,7 @@ namespace ServerTest
                     service.AddLevel(level);
                     Block.OverrideBlock(new TestDirt());
                     Item.OverrideItem(new TestStick());
-                    //service.LogEnabled = true;
+                    service.LogEnabled = true;
                     service.OnChat += new EventHandler<ChatEventArgs>(service_OnChat);
                     service.OnPlayerJoin += new EventHandler<PlayerEventArgs>(service_OnPlayerJoin);
                     service.OnPlayerLeave += new EventHandler<PlayerEventArgs>(service_OnPlayerLeave);

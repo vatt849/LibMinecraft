@@ -144,6 +144,11 @@ namespace LibMinecraft.Model.Packets
         /// <remarks></remarks>
         public override void HandlePacket(MultiplayerServer Server, RemoteClient Client)
         {
+            if (Client.PlayerEntity.SelectedItem.ID != Slot.ID || 
+                Client.PlayerEntity.SelectedItem.Metadata != Slot.Metadata)
+            {
+                return;
+            }
             Block clickedBlock = new AirBlock();
             if (Location.Y < 256)
                 clickedBlock = Server.GetWorld(Client).GetBlock(Location);
@@ -186,9 +191,14 @@ namespace LibMinecraft.Model.Packets
                                 Block current = Server.GetWorld(Client).GetBlock(newBlockLocation);
                                 if (ValidPlacementBlocks.Contains(current.GetType()))
                                 {
+                                    if (Client.PlayerEntity.GameMode != GameMode.Creative)
+                                    {
+                                        Client.PlayerEntity.Inventory[Client.PlayerEntity.SelectedSlot].Count--;
+                                        if (Client.PlayerEntity.Inventory[Client.PlayerEntity.SelectedSlot].Count == 0)
+                                            Client.PlayerEntity.Inventory[Client.PlayerEntity.SelectedSlot] = new Slot(-1, 1);
+                                    }
                                     foreach (RemoteClient c in Server.GetClientsInWorldExcept(Server.GetWorld(Client), Client))
                                         c.PacketQueue.Enqueue(new AnimationPacket(Client.PlayerEntity.ID, Animation.SwingArm));
-
                                     Server.GetWorld(Client).SetBlock(newBlockLocation, newBlock);
                                 }
                             }

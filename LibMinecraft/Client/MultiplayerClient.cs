@@ -385,7 +385,7 @@ namespace LibMinecraft.Client
                                 ReadInt(netStream);
                                 ReadInt(netStream);
                                 break;
-                            case PacketID.SpawnExperienceOrb: ReadBytes(netStream, 18); break
+                            case PacketID.SpawnExperienceOrb: ReadBytes(netStream, 18); break;
                             case PacketID.EntityVelocity: ReadBytes(netStream, 10); break;
                             case PacketID.DestroyEntity: ReadBytes(netStream, 4); break;
                             case PacketID.Entity: ReadBytes(netStream, 4); break;
@@ -1187,6 +1187,8 @@ namespace LibMinecraft.Client
         {
             try
             {
+                if (resp.Length == 0)
+                    return "";
                 string res = "";
                 foreach (byte b in resp)
                     res += b.ToString("x2") + ":";

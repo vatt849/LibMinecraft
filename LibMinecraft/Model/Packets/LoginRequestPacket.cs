@@ -245,7 +245,8 @@ namespace LibMinecraft.Model.Packets
             if (Server.GetLevel(client).WeatherManager.WeatherOccuring)
                 client.PacketQueue.Enqueue(new ChangeGameStatePacket(NewOrInvalidState.BeginRain));
 
-            
+            SetWindowItemsPacket swip = new SetWindowItemsPacket(0, client.PlayerEntity.Inventory);
+            client.PacketQueue.Enqueue(swip);
         }
 
         /// <summary>

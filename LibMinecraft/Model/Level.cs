@@ -113,11 +113,64 @@ namespace LibMinecraft.Model
 
             Spawn = new Vector3(0, 17, 0);
 
-            GameMode = GameMode.Creative;
+            GameMode = GameMode.Survival;
 
             WeatherManager = new WeatherManager();
 
             Name = "world";
+        }
+
+        public void SavePlayer(RemoteClient rc)
+        {
+            NbtFile player = new NbtFile(rc.PlayerEntity.Name + ".dat");
+            player.RootTag = new NbtCompound();
+            player.RootTag.Tags.Add(new NbtByte("OnGround", (byte)(rc.PlayerEntity.OnGround ? 1 : 0)));
+            player.RootTag.Tags.Add(new NbtByte("Sleeping", (byte)(rc.PlayerEntity.Sleeping ? 1 : 0)));
+            player.RootTag.Tags.Add(new NbtShort("Air", 0)); // TODO
+            player.RootTag.Tags.Add(new NbtShort("AttackTime", 0)); // TODO
+            player.RootTag.Tags.Add(new NbtShort("Fire", rc.PlayerEntity.TimeOnFire));
+            player.RootTag.Tags.Add(new NbtShort("Health", rc.PlayerEntity.Health));
+            player.RootTag.Tags.Add(new NbtShort("HurtTime", 0)); // TODO
+            player.RootTag.Tags.Add(new NbtShort("SleepTimer", rc.PlayerEntity.SleepTimer));
+            player.RootTag.Tags.Add(new NbtInt("Dimension", (int)rc.PlayerEntity.Dimension));
+            player.RootTag.Tags.Add(new NbtInt("foodLevel", (int)rc.PlayerEntity.Food));
+            player.RootTag.Tags.Add(new NbtInt("foodTickTimer", (int)rc.PlayerEntity.FoodTimer));
+            player.RootTag.Tags.Add(new NbtInt("playerGameType", (int)rc.PlayerEntity.GameMode));
+            player.RootTag.Tags.Add(new NbtInt("XpLevel", rc.PlayerEntity.XpLevel));
+            player.RootTag.Tags.Add(new NbtInt("XpTotal", rc.PlayerEntity.XpTotal));
+
+            NbtList inventory = new NbtList("Inventory");
+            for (int i = 0; i < rc.PlayerEntity.Inventory.Length; i++)
+            {
+                NbtCompound item = new NbtCompound();
+                item.Tags.Add(new NbtByte("Count", rc.PlayerEntity.Inventory[i].Count));
+                item.Tags.Add(new NbtByte("Slot", (byte)i));
+                item.Tags.Add(new NbtShort("Damage", rc.PlayerEntity.Inventory[i].Metadata));
+                item.Tags.Add(new NbtShort("id", rc.PlayerEntity.Inventory[i].ID));
+                inventory.Tags.Add(item);
+            }
+            player.RootTag.Tags.Add(inventory);
+
+            NbtList motion = new NbtList("Motion");
+            motion.Tags.Add(new NbtDouble(rc.PlayerEntity.Velocity.X));
+            motion.Tags.Add(new NbtDouble(rc.PlayerEntity.Velocity.Y));
+            motion.Tags.Add(new NbtDouble(rc.PlayerEntity.Velocity.Z));
+            player.RootTag.Tags.Add(motion);
+
+            NbtList position = new NbtList("Position");
+            position.Tags.Add(new NbtDouble(rc.PlayerEntity.Location.X));
+            position.Tags.Add(new NbtDouble(rc.PlayerEntity.Location.Y));
+            position.Tags.Add(new NbtDouble(rc.PlayerEntity.Location.Z));
+            player.RootTag.Tags.Add(position);
+
+            NbtList rotation = new NbtList("Rotation");
+            rotation.Tags.Add(new NbtFloat((float)rc.PlayerEntity.Rotation.X));
+            rotation.Tags.Add(new NbtFloat((float)rc.PlayerEntity.Rotation.Y));
+            player.RootTag.Tags.Add(rotation);
+
+            Stream playerStream = File.Open(Path.Combine(SaveDirectory, "players", rc.PlayerEntity.Name + ".dat"), FileMode.Create);
+            player.SaveFile(playerStream);
+            playerStream.Close();
         }
 
         public PlayerEntity LoadPlayer(string Name)

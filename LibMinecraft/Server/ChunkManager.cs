@@ -39,7 +39,7 @@ namespace LibMinecraft.Server
                             0,
                             ((int)client.PlayerEntity.Location.Z >> 4 << 4) + (z * 16)));
                     }
-                // Unload extranneous columns
+                // Unload extraneous columns
                 List<Vector3> currentColumns = new List<Vector3>(client.PlayerEntity.LoadedColumns);
                 foreach (Vector3 column in currentColumns)
                 {
@@ -71,7 +71,6 @@ namespace LibMinecraft.Server
             MapChunksPacket mcp = new MapChunksPacket();
             MapColumn mc = Server.GetWorld(Client).GetColumn(ColumnLocation);
             mcp.GroundUpContinuous = true;
-            mcp.BiomeData = mc.Biomes;
             mcp.Location = ColumnLocation;
 
             byte[] blockData = new byte[0];
@@ -103,7 +102,7 @@ namespace LibMinecraft.Server
                 mask <<= 1;
             }
 
-            byte[] columnData = blockData.Concat(metadata).Concat(blockLight).Concat(skyLight).Concat(mcp.BiomeData).ToArray();
+            byte[] columnData = blockData.Concat(metadata).Concat(blockLight).Concat(skyLight).Concat(mc.Biomes).ToArray();
 
             zLibDeflater.SetInput(columnData);
             zLibDeflater.Finish();

@@ -146,8 +146,6 @@ namespace LibMinecraft.Server
         public static void UnloadColumnOnClient(RemoteClient Client, Vector3 ColumnLocation, MultiplayerServer Server)
         {
             Client.PacketQueue.Enqueue(new PreChunkPacket(ColumnLocation.X, ColumnLocation.Z, true));
-            // Send an empty chunk at that location (1.2.3 change)
-            //Client.PacketQueue.Enqueue(new MapChunkPacket(ColumnLocation, true, 0, 0, new byte[0], new byte[0]));
             Client.PlayerEntity.LoadedColumns.Remove(ColumnLocation);
         }
     }

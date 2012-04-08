@@ -439,6 +439,12 @@ namespace LibMinecraft.Server
             Levels.Add(level);
             level.OnBlockChange += new EventHandler<BlockChangeEventArgs>(level_OnBlockChange);
             level.PropertyChanged += new PropertyChangedEventHandler(level_PropertyChanged);
+            level.Overworld.OnEntityAdded += new EventHandler<EntityEventArgs>(world_OnEntityAdded);
+            level.Overworld.OnEntityRemoved += new EventHandler<EntityEventArgs>(world_OnEntityRemoved);
+            level.Nether.OnEntityAdded += new EventHandler<EntityEventArgs>(world_OnEntityAdded);
+            level.Nether.OnEntityRemoved += new EventHandler<EntityEventArgs>(world_OnEntityRemoved);
+            level.TheEnd.OnEntityAdded += new EventHandler<EntityEventArgs>(world_OnEntityAdded);
+            level.TheEnd.OnEntityRemoved += new EventHandler<EntityEventArgs>(world_OnEntityRemoved);
         }
 
         #endregion
@@ -488,7 +494,11 @@ namespace LibMinecraft.Server
             ticksSinceSave++;
             foreach (Level l in Levels)
             {
-                l._Time++; // TODO: Further updates FINISHED
+                l._Time++;
+                foreach (World w in l.Worlds)
+                {
+                    w.UpdateEntities();
+                }
             }
             if (ticksSinceSave == SaveFrequency)
                 ticksSinceSave = 0;
@@ -879,15 +889,34 @@ namespace LibMinecraft.Server
             {
                 case "Time":
                     foreach (RemoteClient r in GetClientsInLevel(level))
-                    {
                         r.PacketQueue.Enqueue(new TimeUpdatePacket((level.Time)));
-                    }
-
-
                     break;
             }
         }
 
+        void world_OnEntityRemoved(object sender, EntityEventArgs e)
+        {
+            foreach (RemoteClient r in GetClientsInWorld(sender as World))
+            {
+                r.PacketQueue.Enqueue(new DestroyEntityPacket(e.Entity.ID));
+            }
+        }
+
+        void world_OnEntityAdded(object sender, EntityEventArgs e)
+        {
+            Packet packet;
+            if (e.Entity is FallingSandEntity || e.Entity is FallingGravelEntity || e.Entity is FallingEnderDragonEggEntity)
+            {
+                packet = new AddObjectOrVehicleEntityPacket(e.Entity.ID, e.Entity.TypeID, e.Entity.Location);
+            }
+            else
+                return;
+
+            foreach (RemoteClient r in GetClientsInWorld(sender as World))
+            {
+                r.PacketQueue.Enqueue(packet);
+            }
+        }
 
         /// <summary>
         /// Handles the PropertyChanged event of the PlayerEntity control.

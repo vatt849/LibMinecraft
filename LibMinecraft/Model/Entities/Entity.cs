@@ -250,7 +250,7 @@ namespace LibMinecraft.Model.Entities
             if (this is PlayerEntity)
                 return; // Players handle their own physics
             if (this.Gravity)
-                this.Velocity.Y -= 0.09; // Gravity is 0.49 meters/tick squared IRL, but faster in Minecraft
+                this.Velocity.Y -= 0.09;
             if (this.Location.Y < 0)
             {
                 world.RemoveEntity(this.ID);

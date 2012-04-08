@@ -41,6 +41,8 @@ namespace LibMinecraft.Model
         public List<Entity> Entities { get; set; }
 
         public event EventHandler<BlockChangeEventArgs> OnBlockChange;
+        public event EventHandler<EntityEventArgs> OnEntityAdded;
+        public event EventHandler<EntityEventArgs> OnEntityRemoved;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="World"/> class.
@@ -76,7 +78,8 @@ namespace LibMinecraft.Model
 
         public void AddEntity(Entity Entity)
         {
-            this.Entities.Add(Entity); // TODO: More fancy things
+            this.Entities.Add(Entity);
+            OnEntityAdded(this, new EntityEventArgs(Entity));
         }
 
         public void RemoveEntity(int ID)
@@ -85,6 +88,7 @@ namespace LibMinecraft.Model
             {
                 if (Entities[i].ID == ID)
                 {
+                    OnEntityRemoved(this, new EntityEventArgs(Entities[i]));
                     Entities.Remove(Entities[i]);
                     return;
                 }
@@ -216,6 +220,12 @@ namespace LibMinecraft.Model
             r.GetColumn(Location).SetChunk(Location, c);
         }
 
+        public void UpdateEntities()
+        {
+            for (int i = 0; i < Entities.Count; i++)
+                Entities[i].Tick(this);
+        }
+
         /// <summary>
         /// Saves this instance.
         /// </summary>
@@ -271,7 +281,7 @@ namespace LibMinecraft.Model
     /// Represents a new entity in a world.
     /// </summary>
     /// <remarks></remarks>
-    public class EntityAddEventArgs : EventArgs
+    public class EntityEventArgs : EventArgs
     {
         /// <summary>
         /// Gets or sets the entity.
@@ -281,11 +291,11 @@ namespace LibMinecraft.Model
         public Entity Entity { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityAddEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="EntityEventArgs"/> class.
         /// </summary>
         /// <param name="Entity">The entity.</param>
         /// <remarks></remarks>
-        public EntityAddEventArgs(Entity Entity)
+        public EntityEventArgs(Entity Entity)
         {
             this.Entity = Entity;
         }

@@ -169,6 +169,14 @@ namespace LibMinecraft.Model
                     return TheEnd;
             }
         }
+
+        public IEnumerable<World> Worlds
+        {
+            get
+            {
+                return new World[] { Overworld, Nether, TheEnd };
+            }
+        }
     
         public event PropertyChangedEventHandler  PropertyChanged;
     }

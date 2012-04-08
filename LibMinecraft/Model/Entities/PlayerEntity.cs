@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
+using LibMinecraft.Model.Blocks;
 
 namespace LibMinecraft.Model.Entities
 {
@@ -324,6 +325,41 @@ namespace LibMinecraft.Model.Entities
                 int nextRequired = (int)Math.Pow(1.75 * XpLevel, 2) + (5 * XpLevel);
                 return currentRequired / nextRequired;
             }
+        }
+
+        public override void Tick(World world)
+        {
+            Block upper = world.GetBlock(Location + Vector3.Up);
+            Block lower = world.GetBlock(Location);
+
+            ScheduledEntityUpdate nextUpdate = null;
+
+            if (ScheduledUpdateManager.Updates.Where(u => u is ScheduledEntityUpdate &&
+                (u as ScheduledEntityUpdate).Entity.ID == this.ID).Count() != 0)
+            {
+                nextUpdate = (ScheduledEntityUpdate)ScheduledUpdateManager.Updates.Where(u => u is ScheduledEntityUpdate &&
+                    (u as ScheduledEntityUpdate).Entity.ID == this.ID).First();
+            }
+
+            if (nextUpdate == null)
+            {
+                if (upper is NetherPortalBlock || lower is NetherPortalBlock)
+                    ScheduledUpdateManager.AddUpdate(100, new ScheduledEntityUpdate(this, world));
+            }
+            else
+            {
+                if (!(upper is NetherPortalBlock || lower is NetherPortalBlock))
+                    ScheduledUpdateManager.Updates.Remove(nextUpdate);
+            }
+            if (upper is EndPortalBlock || lower is EndPortalBlock)
+                this.Dimension = Model.Dimension.TheEnd;
+            base.Tick(world);
+        }
+
+        public override void ScheduledUpdate(World world)
+        {
+            this.Dimension = Model.Dimension.Nether;
+            base.ScheduledUpdate(world);
         }
 
         protected override void FirePropertyChanged(object sender, PropertyChangedEventArgs e)

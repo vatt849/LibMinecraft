@@ -38,15 +38,26 @@ namespace LibMinecraft.Model
         {
             MapColumn mc = new MapColumn(Region, Coordinates);
 
-            // Top layer of grass, bottom layer of bedrock
-            for (int x = 0; x < 16; x++)
-                for (int z = 0; z < 16; z++)
-                {
-                    mc.SetBlock(new Vector3(x, 15, z), new GrassBlock());
-                    for (int y = 1; y < 15; y++)
-                        mc.SetBlock(new Vector3(x, y, z), new DirtBlock());
-                    mc.SetBlock(new Vector3(x, 0, z), new BedrockBlock());
-                }
+            switch (Dimension)
+            {
+                case Dimension.Nether:
+                    for (int x = 0; x < 16; x++)
+                        for (int y = 0; y < 15; y++)
+                            for (int z = 0; z < 16; z++)
+                                mc.SetBlock(new Vector3(x, y, z), new NetherrackBlock());
+                    break;
+                default:
+                    // Top layer of grass, bottom layer of bedrock
+                    for (int x = 0; x < 16; x++)
+                        for (int z = 0; z < 16; z++)
+                        {
+                            mc.SetBlock(new Vector3(x, 15, z), new GrassBlock());
+                            for (int y = 1; y < 15; y++)
+                                mc.SetBlock(new Vector3(x, y, z), new DirtBlock());
+                            mc.SetBlock(new Vector3(x, 0, z), new BedrockBlock());
+                        }
+                    break;
+            }
 
             return mc;
         }

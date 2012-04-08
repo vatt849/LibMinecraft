@@ -113,7 +113,8 @@ namespace LibMinecraft.Model
 
             Spawn = new Vector3(0, 17, 0);
 
-            GameMode = GameMode.Survival;
+            GameMode = GameMode.Creative;
+            Difficulty = Model.Difficulty.Normal;
 
             WeatherManager = new WeatherManager();
 
@@ -168,9 +169,7 @@ namespace LibMinecraft.Model
             rotation.Tags.Add(new NbtFloat((float)rc.PlayerEntity.Rotation.Y));
             player.RootTag.Tags.Add(rotation);
 
-            Stream playerStream = File.Open(Path.Combine(SaveDirectory, "players", rc.PlayerEntity.Name + ".dat"), FileMode.Create);
-            player.SaveFile(playerStream);
-            playerStream.Close();
+            player.SaveFile(Path.Combine(SaveDirectory, "players", rc.PlayerEntity.Name + ".dat"));
         }
 
         public PlayerEntity LoadPlayer(string Name)
@@ -307,9 +306,7 @@ namespace LibMinecraft.Model
             file.RootTag.Tags.Add(new NbtLong("Time", Time));
             file.RootTag.Tags.Add(new NbtString("generatorName", WorldGenerator.Name));
             file.RootTag.Tags.Add(new NbtString("levelName", Name));
-            Stream level = File.Open(Path.Combine(SaveDirectory, "level.dat"), FileMode.Create);
-            file.SaveFile(level);
-            level.Close();
+            file.SaveFile(Path.Combine(SaveDirectory, "level.dat"));
 
             foreach (RemoteClient rc in server.GetClientsInLevel(this))
             {
@@ -359,9 +356,7 @@ namespace LibMinecraft.Model
                 rotation.Tags.Add(new NbtFloat((float)rc.PlayerEntity.Rotation.Y));
                 player.RootTag.Tags.Add(rotation);
 
-                Stream playerStream = File.Open(Path.Combine(SaveDirectory, "players", rc.PlayerEntity.Name + ".dat"), FileMode.Create);
-                player.SaveFile(playerStream);
-                playerStream.Close();
+                player.SaveFile(Path.Combine(SaveDirectory, "players", rc.PlayerEntity.Name + ".dat"));
             }
 
             Overworld.Save();

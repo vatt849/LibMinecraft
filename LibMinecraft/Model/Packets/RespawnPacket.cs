@@ -96,10 +96,10 @@ namespace LibMinecraft.Model.Packets
             get
             {
                 return new byte[] { (byte)PacketID }
-                .Concat(MakeInt((int)Dimension))
-                .Concat(new byte[] { (byte)GameMode })
-                .Concat(MakeShort(WorldHeight))
-                .Concat(MakeString(LevelType)).ToArray();
+                    .Concat(MakeInt((int)Dimension))
+                    .Concat(new byte[] { (byte)Difficulty, (byte)GameMode, })
+                    .Concat(MakeShort(WorldHeight))
+                    .Concat(MakeString(LevelType)).ToArray();
             }
         }
 

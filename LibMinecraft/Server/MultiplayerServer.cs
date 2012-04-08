@@ -346,15 +346,17 @@ namespace LibMinecraft.Server
         /// <param name="c">The client to send.</param>
         /// <param name="d">The target dimension.</param>
         /// <remarks></remarks>
-        public virtual void SendPlayerToDimension(RemoteClient c, Dimension d)
+        protected internal virtual void SendPlayerToDimension(RemoteClient c, Dimension d)
         {
-            if (c.PlayerEntity.Dimension == d)
-                return;
-            c.PlayerEntity.LoadedColumns.Clear();
+            foreach (RemoteClient rc in GetClientsInWorldExcept(GetLevel(c).GetWorld(c.PlayerEntity.OldDimension), c))
+                rc.PacketQueue.Enqueue(new DestroyEntityPacket(c.PlayerEntity.ID));
             c.PlayerEntity.Dimension = d;
+            c.PlayerEntity.LoadedColumns.Clear();
             c.PacketQueue.Enqueue(new RespawnPacket(c, GetWorld(c)));
             c.PacketQueue.Enqueue(new PlayerPositionAndLookPacket(c.PlayerEntity));
             ChunkManager.RecalculateClientColumns(c, this, true);
+            foreach (RemoteClient rc in GetClientsInWorldExcept(GetWorld(c), c))
+                rc.PacketQueue.Enqueue(new SpawnNamedEntityPacket(c.PlayerEntity.ID, c.PlayerEntity.Name, c.PlayerEntity.Location, c.PlayerEntity.Rotation, 0));
         }
 
         /// <summary>
@@ -542,10 +544,9 @@ namespace LibMinecraft.Server
                             EnqueueToAllClients(new PlayerListItemPacket(client.PlayerEntity.Name, false, 0));
                             foreach (RemoteClient c in GetClientsInWorldExcept(GetWorld(client), client))
                                 c.PacketQueue.Enqueue(new DestroyEntityPacket(client.PlayerEntity.ID));
-                            GetWorld(client).RemoveEntity(client.PlayerEntity.ID);
-                            GetLevel(client).SavePlayer(client);
                             if (OnPlayerLeave != null)
                                 OnPlayerLeave(this, new PlayerEventArgs(client));
+                            GetWorld(client).RemoveEntity(client.PlayerEntity.ID);
                         }
                         continue;
                     }
@@ -911,6 +912,12 @@ namespace LibMinecraft.Server
 
         void world_OnEntityRemoved(object sender, EntityEventArgs e)
         {
+            if (e.Entity is PlayerEntity)
+            {
+                RemoteClient rc = GetClient(e.Entity as PlayerEntity);
+                (sender as World).Level.SavePlayer(rc);
+                ConnectedClients.Remove(rc);
+            }
             foreach (RemoteClient r in GetClientsInWorld(sender as World))
             {
                 r.PacketQueue.Enqueue(new DestroyEntityPacket(e.Entity.ID));
@@ -919,6 +926,8 @@ namespace LibMinecraft.Server
 
         void world_OnEntityAdded(object sender, EntityEventArgs e)
         {
+            e.Entity.PropertyChanged += new PropertyChangedEventHandler(Entity_PropertyChanged);
+
             Packet packet;
             if (e.Entity is FallingSandEntity || e.Entity is FallingGravelEntity || e.Entity is FallingEnderDragonEggEntity)
             {
@@ -930,6 +939,16 @@ namespace LibMinecraft.Server
             foreach (RemoteClient r in GetClientsInWorld(sender as World))
             {
                 r.PacketQueue.Enqueue(packet);
+            }
+        }
+
+        void Entity_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "Dimension":
+                    SendPlayerToDimension(GetClient(sender as PlayerEntity), (sender as PlayerEntity).Dimension);
+                    break;
             }
         }
 

@@ -416,6 +416,7 @@
     <Compile Include="Model\Recipe.cs" />
     <Compile Include="Model\Blocks\ScheduledBlockUpdate.cs" />
     <Compile Include="Model\Region.cs" />
+    <Compile Include="Model\ScheduledEntityUpdate.cs" />
     <Compile Include="Model\ScheduledUpdateManager.cs" />
     <Compile Include="Model\Slot.cs" />
     <Compile Include="Model\User.cs" />

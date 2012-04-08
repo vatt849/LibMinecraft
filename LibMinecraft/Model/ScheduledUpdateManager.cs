@@ -14,7 +14,7 @@ namespace LibMinecraft.Model
         /// <summary>
         /// Updates that are queued to be ran.
         /// </summary>
-        private static List<IScheduledUpdate> Updates;
+        public static List<IScheduledUpdate> Updates;
 
         /// <summary>
         /// Function that adds a new ScheduledUpdate from an external point.

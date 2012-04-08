@@ -197,6 +197,7 @@ namespace LibMinecraft.Model.Entities
             }
             set
             {
+                OldDimension = _Dimension;
                 if (!Equals(_Dimension, value))
                 {
                     _Dimension = value;
@@ -206,6 +207,8 @@ namespace LibMinecraft.Model.Entities
                     _Dimension = value;
             }
         }
+
+        public Dimension OldDimension { get; set; }
 
         internal int _WorldIndex;
         /// <summary>
@@ -229,6 +232,10 @@ namespace LibMinecraft.Model.Entities
                 else
                     _WorldIndex = value;
             }
+        }
+
+        public virtual void ScheduledUpdate(World world)
+        {
         }
 
         /// <summary>

@@ -18,6 +18,7 @@ namespace LibMinecraft.Model.Entities
         {
             Location = new Vector3();
             OldLocation = new Vector3();
+            Velocity = new Vector3();
             Rotation = new Vector3();
             MapLoadRadius = 3;
             MapLoadRadiusDueTime = 50;
@@ -26,6 +27,9 @@ namespace LibMinecraft.Model.Entities
             for (int i = 0; i < Inventory.Length; i++)
                 Inventory[i] = new Slot();
         }
+
+        public bool Sleeping { get; set; }
+        public short SleepTimer { get; set; }
 
         private string _Name;
         public string Name
@@ -121,6 +125,13 @@ namespace LibMinecraft.Model.Entities
                     _Food = value;
             }
         }
+
+        /// <summary>
+        /// The ticks until the food level will be reduced.
+        /// </summary>
+        public int FoodTimer { get; set; }
+
+        public float FoodExaustionLevel { get; set; }
 
         private float _FoodSaturation;
         public float FoodSaturation
@@ -255,6 +266,54 @@ namespace LibMinecraft.Model.Entities
             get
             {
                 return Inventory[SelectedSlot];
+            }
+        }
+
+        private int _XpTotal;
+        public int XpTotal
+        {
+            get
+            {
+                return _XpTotal;
+            }
+            set
+            {
+                if (!Equals(_XpTotal, value) && PropertyChanged != null)
+                {
+                    _XpTotal = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("XpTotal"));
+                }
+                else
+                    _XpTotal = value;
+            }
+        }
+
+        private int _XpLevel;
+        public int XpLevel
+        {
+            get
+            {
+                return _XpLevel;
+            }
+            set
+            {
+                if (!Equals(_XpLevel, value) && PropertyChanged != null)
+                {
+                    _XpLevel = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("XpLevel"));
+                }
+                else
+                    _XpLevel = value;
+            }
+        }
+
+        public float XpPercentage
+        {
+            get
+            {
+                int currentRequired = (int)Math.Pow(1.75 * (XpLevel + 1), 2) + (5 * (XpLevel + 1));
+                int nextRequired = (int)Math.Pow(1.75 * XpLevel, 2) + (5 * XpLevel);
+                return currentRequired / nextRequired;
             }
         }
 

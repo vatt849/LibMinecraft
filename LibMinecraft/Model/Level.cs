@@ -8,6 +8,7 @@ using System.IO;
 using LibNbt;
 using LibNbt.Tags;
 using LibMinecraft.Server;
+using LibMinecraft.Model.Entities;
 
 namespace LibMinecraft.Model
 {
@@ -115,11 +116,102 @@ namespace LibMinecraft.Model
             GameMode = GameMode.Creative;
 
             WeatherManager = new WeatherManager();
+
+            Name = "world";
         }
 
-        public void Save(string SaveDirectory)
+        public PlayerEntity LoadPlayer(string Name)
+        {
+            PlayerEntity entity = new PlayerEntity();
+            entity.Location = Spawn;
+            entity.Name = Name;
+            entity.ID = MultiplayerServer.NextEntityID++;
+            entity.Health = 20;
+            entity.Food = 20;
+            entity.FoodSaturation = 1;
+            entity.LevelIndex = 0; // TODO: Remember which level they are saved in
+            entity.LoadedColumns = new List<Vector3>();
+
+            if (string.IsNullOrEmpty(SaveDirectory) || !File.Exists(Path.Combine(SaveDirectory, "players", entity.Name + ".dat")))
+                return entity;
+
+            NbtFile file = new NbtFile();
+            file.LoadFile(Path.Combine(SaveDirectory, "players", entity.Name + ".dat"));
+
+            if (file.Query<NbtByte>("//OnGround") != null)
+                entity.OnGround = file.Query<NbtByte>("//OnGround").Value == 1;
+            if (file.Query<NbtByte>("//Sleeping") != null)
+                entity.Sleeping = file.Query<NbtByte>("//Sleeping").Value == 1;
+            // TODO: Commented values
+            //entity.Air
+            //entity.AttackTime
+            //entity.DeathTime
+            if (file.Query<NbtShort>("//Fire") != null)
+                entity.TimeOnFire = file.Query<NbtShort>("//Fire").Value;
+            if (file.Query<NbtShort>("//Health") != null)
+                entity.Health = file.Query<NbtShort>("//Health").Value;
+            //entity.HurtTime
+            if (file.Query<NbtShort>("//SleepTimer") != null)
+                entity.SleepTimer = file.Query<NbtShort>("//SleepTimer").Value;
+            if (file.Query<NbtInt>("//Dimension") != null)
+                entity.Dimension = (Dimension)file.Query<NbtInt>("//Dimension").Value;
+            if (file.Query<NbtInt>("//foodLevel") != null)
+                entity.Food = (short)file.Query<NbtInt>("//foodLevel").Value;
+            if (file.Query<NbtInt>("//foodTickTimer") != null)
+                entity.FoodTimer = file.Query<NbtInt>("//foodTickTimer").Value;
+            if (file.Query<NbtInt>("//playerGameType") != null)
+                entity.GameMode = (GameMode)file.Query<NbtInt>("//playerGameType").Value;
+            if (file.Query<NbtInt>("//XpLevel") != null)
+                entity.XpLevel = file.Query<NbtInt>("//XpLevel").Value;
+            if (file.Query<NbtInt>("//XpTotal") != null)
+                entity.XpTotal = file.Query<NbtInt>("//XpTotal").Value;
+            //entity.FallDistance
+            if (file.Query<NbtFloat>("//foodExhastionLevel") != null)
+                entity.FoodExaustionLevel = file.Query<NbtFloat>("//foodExhastionLevel").Value;
+            if (file.Query<NbtFloat>("//foodSaturationLevel") != null)
+                entity.FoodSaturation = file.Query<NbtFloat>("//foodSaturationLevel").Value;
+
+            NbtList inventory = file.Query<NbtList>("//Inventory");
+            foreach (NbtCompound slot in inventory.Tags.Where(t => t is NbtCompound))
+            {
+                try
+                {
+                    Slot s = new Slot();
+                    s.ID = slot.Query<NbtShort>("//id").Value;
+                    s.Count = slot.Query<NbtByte>("//Count").Value;
+                    s.Metadata = slot.Query<NbtShort>("//Damage").Value;
+                    entity.Inventory[slot.Query<NbtByte>("//Slot").Value] = s;
+                }
+                catch { }
+            }
+
+            if (file.Query<NbtDouble>("//Motion/0") != null)
+                entity.Velocity.X = file.Query<NbtDouble>("//Motion/0").Value;
+            if (file.Query<NbtDouble>("//Motion/1") != null)
+                entity.Velocity.Y = file.Query<NbtDouble>("//Motion/1").Value;
+            if (file.Query<NbtDouble>("//Motion/2") != null)
+                entity.Velocity.Z = file.Query<NbtDouble>("//Motion/2").Value;
+
+            if (file.Query<NbtDouble>("//Position/0") != null)
+                entity.Location.X = file.Query<NbtDouble>("//Position/0").Value;
+            if (file.Query<NbtDouble>("//Position/1") != null)
+                entity.Location.Y = file.Query<NbtDouble>("//Position/1").Value;
+            if (file.Query<NbtDouble>("//Position/2") != null)
+                entity.Location.Z = file.Query<NbtDouble>("//Position/2").Value;
+
+            if (file.Query<NbtFloat>("//Rotation/0") != null)
+                entity.Rotation.X = file.Query<NbtFloat>("//Rotation/0").Value;
+            if (file.Query<NbtFloat>("//Rotation/1") != null)
+                entity.Rotation.Y = file.Query<NbtFloat>("//Rotation/1").Value;
+
+            return entity;
+        }
+
+        public void Save(string SaveDirectory, MultiplayerServer server)
         {
             this.SaveDirectory = SaveDirectory;
+            if (!Directory.Exists(SaveDirectory))
+                Directory.CreateDirectory(SaveDirectory);
             Overworld.WorldDirectory = Path.Combine(SaveDirectory, "region");
             if (!Directory.Exists(Path.Combine(SaveDirectory, "DIM1")))
                 Directory.CreateDirectory(Path.Combine(SaveDirectory, "DIM1"));
@@ -127,14 +219,16 @@ namespace LibMinecraft.Model
             if (!Directory.Exists(Path.Combine(SaveDirectory, "DIM-1")))
                 Directory.CreateDirectory(Path.Combine(SaveDirectory, "DIM-1"));
             Nether.WorldDirectory = Path.Combine(SaveDirectory, "DIM-1", "region");
+            if (!Directory.Exists(Path.Combine(SaveDirectory, "players")))
+                Directory.CreateDirectory(Path.Combine(SaveDirectory, "players"));
 
-            Save();
+            Save(server);
         }
 
-        public void Save()
+        public void Save(MultiplayerServer server)
         {
-            if (!Directory.Exists(SaveDirectory))
-                Directory.CreateDirectory(SaveDirectory);
+            if (string.IsNullOrEmpty(SaveDirectory))
+                return;
             if (!Directory.Exists(Path.Combine(SaveDirectory, "data")))
                 Directory.CreateDirectory(Path.Combine(SaveDirectory, "data"));
             if (!Directory.Exists(Path.Combine(SaveDirectory, "players")))
@@ -142,9 +236,84 @@ namespace LibMinecraft.Model
 
             NbtFile file = new NbtFile("level.dat");
             file.RootTag = new NbtCompound("Data");
-            file.RootTag.Set("hardcore", new NbtByte((byte)(this.GameMode == GameMode.Hardcore ? 1 : 0)));
-            file.RootTag.Set("MapFeatures", new NbtByte((byte)(WorldGenerator.GenerateStructures ? 1 : 0)));
-            file.RootTag.Set("raining", new NbtByte((byte)(WeatherManager.WeatherOccuring ? 1 : 0)));
+            file.RootTag.Tags.Add(new NbtByte("hardcore", (byte)(this.GameMode == GameMode.Hardcore ? 1 : 0)));
+            file.RootTag.Tags.Add(new NbtByte("MapFeatures", (byte)(WorldGenerator.GenerateStructures ? 1 : 0)));
+            file.RootTag.Tags.Add(new NbtByte("raining", (byte)(WeatherManager.WeatherOccuring ? 1 : 0)));
+            file.RootTag.Tags.Add(new NbtByte("thundering", (byte)(WeatherManager.EnableThunder ? 1 : 0)));
+            file.RootTag.Tags.Add(new NbtInt("GameType", (int)GameMode));
+            file.RootTag.Tags.Add(new NbtInt("generatorVersion", 0));
+            file.RootTag.Tags.Add(new NbtInt("rainTime", WeatherManager.TicksUntilUpdate));
+            file.RootTag.Tags.Add(new NbtInt("SpawnX", (int)Spawn.X));
+            file.RootTag.Tags.Add(new NbtInt("SpawnY", (int)Spawn.Y));
+            file.RootTag.Tags.Add(new NbtInt("SpawnZ", (int)Spawn.Z));
+            file.RootTag.Tags.Add(new NbtInt("thunderTime", WeatherManager.TicksUntilThunder));
+            file.RootTag.Tags.Add(new NbtInt("version", 19113));
+            file.RootTag.Tags.Add(new NbtLong("LastPlayed", DateTime.Now.ToFileTimeUtc()));
+            file.RootTag.Tags.Add(new NbtLong("RandomSeed", Seed));
+            file.RootTag.Tags.Add(new NbtLong("SizeOnDisk", 0));
+            file.RootTag.Tags.Add(new NbtLong("Time", Time));
+            file.RootTag.Tags.Add(new NbtString("generatorName", WorldGenerator.Name));
+            file.RootTag.Tags.Add(new NbtString("levelName", Name));
+            Stream level = File.Open(Path.Combine(SaveDirectory, "level.dat"), FileMode.Create);
+            file.SaveFile(level);
+            level.Close();
+
+            foreach (RemoteClient rc in server.GetClientsInLevel(this))
+            {
+                NbtFile player = new NbtFile(rc.PlayerEntity.Name + ".dat");
+                player.RootTag = new NbtCompound();
+                player.RootTag.Tags.Add(new NbtByte("OnGround", (byte)(rc.PlayerEntity.OnGround ? 1 : 0)));
+                player.RootTag.Tags.Add(new NbtByte("Sleeping", (byte)(rc.PlayerEntity.Sleeping ? 1 : 0)));
+                player.RootTag.Tags.Add(new NbtShort("Air", 0)); // TODO
+                player.RootTag.Tags.Add(new NbtShort("AttackTime", 0)); // TODO
+                player.RootTag.Tags.Add(new NbtShort("Fire", rc.PlayerEntity.TimeOnFire));
+                player.RootTag.Tags.Add(new NbtShort("Health", rc.PlayerEntity.Health));
+                player.RootTag.Tags.Add(new NbtShort("HurtTime", 0)); // TODO
+                player.RootTag.Tags.Add(new NbtShort("SleepTimer", rc.PlayerEntity.SleepTimer));
+                player.RootTag.Tags.Add(new NbtInt("Dimension", (int)rc.PlayerEntity.Dimension));
+                player.RootTag.Tags.Add(new NbtInt("foodLevel", (int)rc.PlayerEntity.Food));
+                player.RootTag.Tags.Add(new NbtInt("foodTickTimer", (int)rc.PlayerEntity.FoodTimer));
+                player.RootTag.Tags.Add(new NbtInt("playerGameType", (int)rc.PlayerEntity.GameMode));
+                player.RootTag.Tags.Add(new NbtInt("XpLevel", rc.PlayerEntity.XpLevel));
+                player.RootTag.Tags.Add(new NbtInt("XpTotal", rc.PlayerEntity.XpTotal));
+
+                NbtList inventory = new NbtList("Inventory");
+                for (int i = 0; i < rc.PlayerEntity.Inventory.Length; i++)
+                {
+                    NbtCompound item = new NbtCompound();
+                    item.Tags.Add(new NbtByte("Count", rc.PlayerEntity.Inventory[i].Count));
+                    item.Tags.Add(new NbtByte("Slot", (byte)i));
+                    item.Tags.Add(new NbtShort("Damage", rc.PlayerEntity.Inventory[i].Metadata));
+                    item.Tags.Add(new NbtShort("id", rc.PlayerEntity.Inventory[i].ID));
+                    inventory.Tags.Add(item);
+                }
+                player.RootTag.Tags.Add(inventory);
+
+                NbtList motion = new NbtList("Motion");
+                motion.Tags.Add(new NbtDouble(rc.PlayerEntity.Velocity.X));
+                motion.Tags.Add(new NbtDouble(rc.PlayerEntity.Velocity.Y));
+                motion.Tags.Add(new NbtDouble(rc.PlayerEntity.Velocity.Z));
+                player.RootTag.Tags.Add(motion);
+
+                NbtList position = new NbtList("Position");
+                position.Tags.Add(new NbtDouble(rc.PlayerEntity.Location.X));
+                position.Tags.Add(new NbtDouble(rc.PlayerEntity.Location.Y));
+                position.Tags.Add(new NbtDouble(rc.PlayerEntity.Location.Z));
+                player.RootTag.Tags.Add(position);
+
+                NbtList rotation = new NbtList("Rotation");
+                rotation.Tags.Add(new NbtFloat((float)rc.PlayerEntity.Rotation.X));
+                rotation.Tags.Add(new NbtFloat((float)rc.PlayerEntity.Rotation.Y));
+                player.RootTag.Tags.Add(rotation);
+
+                Stream playerStream = File.Open(Path.Combine(SaveDirectory, "players", rc.PlayerEntity.Name + ".dat"), FileMode.Create);
+                player.SaveFile(playerStream);
+                playerStream.Close();
+            }
+
+            Overworld.Save();
+            Nether.Save();
+            TheEnd.Save();
         }
 
         void World_OnBlockChange(object sender, BlockChangeEventArgs e)

@@ -497,11 +497,11 @@ namespace LibMinecraft.Server
                 l._Time++;
                 l.WeatherManager.Tick(l, this);
                 foreach (World w in l.Worlds)
-                {
                     w.UpdateEntities();
-                }
+                if (ticksSinceSave >= SaveFrequency)
+                    l.Save(this);
             }
-            if (ticksSinceSave == SaveFrequency)
+            if (ticksSinceSave >= SaveFrequency)
                 ticksSinceSave = 0;
             if (OnTick != null)
                 OnTick(this, new EventArgs());

@@ -16,7 +16,7 @@ namespace LibMinecraft.Model.Packets
 
         public override PacketID PacketID
         {
-            get { throw new NotImplementedException(); }
+            get { return PacketID.PlayerAbilities; }
         }
 
         public override int Length

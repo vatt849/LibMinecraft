@@ -36,6 +36,12 @@ namespace LibMinecraft.Model.Entities
         }
 
         /// <summary>
+        /// The amount of time this entity will spend
+        /// on fire, or zero if it is not on fire.
+        /// </summary>
+        public short TimeOnFire { get; set; }
+
+        /// <summary>
         /// Gets or sets the ID.
         /// </summary>
         /// <value>The ID.</value>

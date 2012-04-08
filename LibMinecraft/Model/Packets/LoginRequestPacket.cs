@@ -177,13 +177,7 @@ namespace LibMinecraft.Model.Packets
                 return;
             }
 
-            client.PlayerEntity.Name = Username;
-            client.PlayerEntity.ID = MultiplayerServer.NextEntityID++;
-            client.PlayerEntity.Health = 20;
-            client.PlayerEntity.Food = 20;
-            client.PlayerEntity.FoodSaturation = 1;
-            client.PlayerEntity.LevelIndex = 0;
-            client.PlayerEntity.LoadedColumns = new List<Vector3>();
+            client.PlayerEntity = Server.Levels[0].LoadPlayer(Username);
 
             if (Server.CurrentServer.OnlineMode)
             {

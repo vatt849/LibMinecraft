@@ -57,17 +57,6 @@ namespace ServerTest
                     }
                     service.GetClient(parameters[1]).PlayerEntity.Dimension = d;
                 }
-                if (input.StartsWith("world "))
-                {
-                    string[] parameters = input.Split(' ');
-                    if (parameters[1] == "new")
-                        service.AddLevel(new Level(new DefaultGenerator()));
-                    //else if (parameters[1] == "savenbt")
-                    //    service.Levels[0].SaveToNBT("test");
-                    //TODO
-                    else
-                        service.GetClient(parameters[1]).PlayerEntity.LevelIndex = int.Parse(parameters[2]);
-                }
                 if (input.StartsWith("location "))
                 {
                     string[] parameters = input.Split(' ');
@@ -78,7 +67,9 @@ namespace ServerTest
                 {
                     server.Port = int.Parse(input.Substring(6));
                     service = new MultiplayerServer(server);
-                    service.AddLevel(new Level(new DefaultGenerator()));
+                    Level level = new Level(new DefaultGenerator());
+                    level.Save("world", service);
+                    service.AddLevel(level);
                     Block.OverrideBlock(new TestDirt());
                     Item.OverrideItem(new TestStick());
                     //service.LogEnabled = true;

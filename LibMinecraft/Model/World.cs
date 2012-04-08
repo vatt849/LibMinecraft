@@ -188,6 +188,13 @@ namespace LibMinecraft.Model
             b.BlockUpdate(this, location + Vector3.Backward);
         }
 
+        public MapColumn GetColumn(Vector3 position)
+        {
+            Region r = GetRegion(position);
+            position -= r.Location;
+            return r.GetColumn(position);
+        }
+
         public Region GetRegion(Vector3 position)
         {
             Vector3 offset = position.Floor();

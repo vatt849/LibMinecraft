@@ -101,34 +101,6 @@ namespace LibMinecraft.Model.Packets
                     .Concat(MakeInt(Data.Length))
                     .Concat(MakeInt(0))
                     .Concat(Data).ToArray();
-
-                //b = b.Concat(MakeInt((int)(Chunk.Location.X / 16))).ToArray();
-                //b = b.Concat(MakeInt((int)(Chunk.Location.Z / 16))).ToArray();
-                //b = b.Concat(MakeBoolean(false)).ToArray();
-                //b = b.Concat(MakeShort((short)(1 << (int)(this.Chunk.Location.Y / 16)))).ToArray();
-                //b = b.Concat(MakeShort(0)).ToArray();
-
-                ////byte[] d = Chunk.GetData();
-
-                //byte[] d = new byte[14336];
-                //Array.Copy(Chunk.Blocks, d, 4096);
-                //for (int i = 0; i < 2048; i++) // Metadata
-                //    d[4096 + i] = (byte)(Chunk.Metadata[i * 2] + (Chunk.Metadata[i * 2 + 1] << 4));
-                //for (int i = 0; i < 4096; i++)
-                //    d[6144 + i] = 0xFF;
-                //for (int i = 0; i < 2048; i++)
-                //    d[10240 + i] = 0;
-
-                //zLibDeflater.SetInput(d);
-                //zLibDeflater.Finish();
-                //byte[] c = new byte[81920];
-                //int l = zLibDeflater.Deflate(c); // Huge allocation
-                //zLibDeflater.Reset();
-
-                //b = b.Concat(MakeInt(l)).ToArray();
-                //b = b.Concat(MakeInt(0)).ToArray();
-                //b = b.Concat(c.Take(l)).ToArray();
-                //return b;
             }
         }
 

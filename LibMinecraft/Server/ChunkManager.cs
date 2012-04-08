@@ -69,8 +69,9 @@ namespace LibMinecraft.Server
             Client.PacketQueue.Enqueue(new PreChunkPacket(ColumnLocation.X, ColumnLocation.Z));
 
             MapChunkPacket mcp = new MapChunkPacket();
+            MapColumn mc = Server.GetWorld(Client).GetColumn(ColumnLocation);
             mcp.GroundUpContinuous = true;
-            mcp.BiomeData = new byte[256];
+            mcp.BiomeData = mc.Biomes;
             mcp.Location = ColumnLocation;
 
             byte[] blockData = new byte[0];
@@ -102,7 +103,7 @@ namespace LibMinecraft.Server
                 mask <<= 1;
             }
 
-            byte[] columnData = blockData.Concat(metadata).Concat(blockLight).Concat(skyLight).ToArray();
+            byte[] columnData = blockData.Concat(metadata).Concat(blockLight).Concat(skyLight).Concat(mcp.BiomeData).ToArray();
 
             zLibDeflater.SetInput(columnData);
             zLibDeflater.Finish();

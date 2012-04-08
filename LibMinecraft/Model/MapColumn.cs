@@ -29,6 +29,7 @@ namespace LibMinecraft.Model
             for (int i = 0; i < Chunks.Length; i++)
                 Chunks[i] = new Chunk(this, this.Location + new Vector3(0, i * 16, 0));
             Biomes = new byte[256];
+            HeightMap = new byte[256];
             IsGenerated = false;
             Entities = new List<Entity>();
         }
@@ -42,6 +43,22 @@ namespace LibMinecraft.Model
         public void SetBlock(Vector3 Location, Block Value)
         {
             int index = (int)Location.Y / 16;
+            int heightIndex = (int)(Location.X * Chunk.Width + Location.Z);
+            if (Value is AirBlock && HeightMap[heightIndex] == (byte)Location.Y)
+            {
+                int newHeight = HeightMap[heightIndex];
+                for (int y = HeightMap[heightIndex]; y > 0; y++)
+                    if (GetBlock(new Vector3(Location.X, y, Location.Z)) != 0)
+                    {
+                        newHeight = y;
+                        break;
+                    }
+            }
+            else
+            {
+                if (Location.Y > HeightMap[heightIndex])
+                    HeightMap[heightIndex] = (byte)Location.Y;
+            }
             Chunks[index].SetBlock(new Vector3(Location.X, ((int)Location.Y) % 16, Location.Z), Value);
         }
 

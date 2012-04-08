@@ -81,7 +81,7 @@ namespace ServerTest
                     service.AddLevel(new Level(new DefaultGenerator()));
                     Block.OverrideBlock(new TestDirt());
                     Item.OverrideItem(new TestStick());
-                    service.LogEnabled = true;
+                    //service.LogEnabled = true;
                     service.OnChat += new EventHandler<ChatEventArgs>(service_OnChat);
                     service.OnPlayerJoin += new EventHandler<PlayerEventArgs>(service_OnPlayerJoin);
                     service.OnPlayerLeave += new EventHandler<PlayerEventArgs>(service_OnPlayerLeave);
@@ -112,6 +112,36 @@ namespace ServerTest
         static void service_OnChat(object sender, ChatEventArgs e)
         {
             Console.WriteLine(e.RawText);
+            if (e.Message.StartsWith("/"))
+            {
+                e.Handled = true;
+                if (e.Message.StartsWith("/get "))
+                {
+                    string[] parts = e.Message.Split(' ');
+                    switch (parts[1])
+                    {
+                        case "weatherduetime":
+                            e.RemoteClient.SendChat(service.GetLevel(e.RemoteClient).WeatherManager.TicksUntilUpdate.ToString());
+                            break;
+                        case "thunderduetime":
+                            e.RemoteClient.SendChat(service.GetLevel(e.RemoteClient).WeatherManager.TicksUntilThunder.ToString());
+                            break;
+                    }
+                }
+                else if (e.Message.StartsWith("/set "))
+                {
+                    string[] parts = e.Message.Split(' ');
+                    switch (parts[1])
+                    {
+                        case "weatherduetime":
+                            service.GetLevel(e.RemoteClient).WeatherManager.TicksUntilUpdate = int.Parse(parts[2]);
+                            break;
+                        case "thunderduetime":
+                            service.GetLevel(e.RemoteClient).WeatherManager.TicksUntilThunder = int.Parse(parts[2]);
+                            break;
+                    }
+                }
+            }
         }
 
         private static void OutputHelp()

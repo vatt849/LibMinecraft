@@ -787,6 +787,16 @@ namespace LibMinecraft.Server
             return Levels[e.LevelIndex].GetWorld(e.Dimension);
         }
 
+        public Level GetLevel(Entity e)
+        {
+            return GetWorld(e).Level;
+        }
+
+        public Level GetLevel(RemoteClient r)
+        {
+            return GetWorld(r).Level;
+        }
+
         /// <summary>
         /// Gets the logged in remote clients.
         /// </summary>

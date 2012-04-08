@@ -24,5 +24,13 @@ namespace LibMinecraft.Model.Blocks
         {
             get { return true; }
         }
+
+        public override BlockOpacity Transparent
+        {
+            get
+            {
+                return BlockOpacity.NonSolid;
+            }
+        }
     }
 }

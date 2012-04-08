@@ -121,7 +121,6 @@ namespace LibMinecraft.Model.Packets
                     .Concat(new byte[] { (byte)Difficulty }).ToArray()
                     .Concat(new byte[] { 0 }).ToArray()
                     .Concat(new byte[] { MaxPlayers, }).ToArray();
-                
             }
         }
 
@@ -248,6 +247,9 @@ namespace LibMinecraft.Model.Packets
                     c.PlayerEntity.Location, c.PlayerEntity.Rotation, c.PlayerEntity.InHand.ID));
             }
             client.PacketQueue.Enqueue(new TimeUpdatePacket(Server.Levels[client.PlayerEntity.LevelIndex].Time));
+
+            if (Server.GetLevel(client).WeatherManager.WeatherOccuring)
+                client.PacketQueue.Enqueue(new NewOrInvalidStatePacket(NewOrInvalidState.BeginRain));
         }
 
         /// <summary>

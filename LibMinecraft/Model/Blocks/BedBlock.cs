@@ -68,9 +68,9 @@ namespace LibMinecraft.Model.Blocks
         {
             if ((world.Level.Time % 24000) > 12000) //If within proper time period
             {
-                if ((this.Metadata & 0x8) != 0x8) //If the peice isn't the headboard
+                if ((this.Metadata & 0x8) != 0x8) //If the piece isn't the headboard
                 {
-                    //Do shit in here
+                    // TODO
                 }
 
                 if ((this.Metadata & 0x4) != 0x4 && clickedBy.OccupiedBed == null)

@@ -68,15 +68,33 @@ namespace LibMinecraft.Model.Blocks
         {
             if ((world.Level.Time % 24000) > 12000) //If within proper time period
             {
-                if ((this.Metadata & 0x8) != 0x8) //If the piece isn't the headboard
+
+                Vector3 direction = Vector3.Zero;
+                if ((this.Metadata & (byte)Bed.East) == (byte)Bed.East)
+                    direction = Vector3.East;
+                else if ((this.Metadata & (byte)Bed.West) == (byte)Bed.West)
+                    direction = Vector3.West;
+                else if ((this.Metadata & (byte)Bed.South) == (byte)Bed.South)
+                    direction = Vector3.South;
+                else if ((this.Metadata & (byte)Bed.North) == (byte)Bed.North)
+                    direction = Vector3.North;
+
+                if ((this.Metadata & (byte)Bed.Head) != (byte)Bed.Head) //If the peice isn't the headboard
                 {
-                    // TODO
+
+                    position += direction;
+                    this.Metadata = world.GetBlock(position).Metadata;
                 }
 
-                if ((this.Metadata & 0x4) != 0x4 && clickedBy.OccupiedBed == null)
+                if ((this.Metadata & (byte)Bed.Occupied) != (byte)Bed.Occupied && clickedBy.OccupiedBed == null)
                 { // If it isn't occupied
                     this.Metadata = (byte)(this.Metadata & ~0x4);
                     this.Metadata = (byte)(this.Metadata | 0x4); //Occupy it
+
+                    clickedBy.Rotation = direction; //Sketchy headboard occupation attempting to rotate player
+                    clickedBy.Sleeping = true;
+                    clickedBy.Location = position + Vector3.Up;
+
 
                     clickedBy.OccupiedBed = position;
 
@@ -88,7 +106,7 @@ namespace LibMinecraft.Model.Blocks
                 }
             }
             else { }
-               //(clickedBy).SendChat("Sorry, beds can only be used during the night.");
+            //(clickedBy).SendChat("Sorry, beds can only be used during the night.");
             return false;
         }
 

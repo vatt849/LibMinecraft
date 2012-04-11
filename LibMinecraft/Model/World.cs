@@ -128,6 +128,8 @@ namespace LibMinecraft.Model
         {
             Region r = GetRegion(position);
             position -= r.Location;
+            if (!RegionsToSave.Contains(r.Location))
+                RegionsToSave.Add(r.Location);
             r.SetBlock(position, value);
 
             ScheduledUpdateManager.RemoveBlockUpdates(position);
@@ -149,6 +151,8 @@ namespace LibMinecraft.Model
         {
             Region r = GetRegion(position);
             position -= r.Location;
+            if (!RegionsToSave.Contains(r.Location))
+                RegionsToSave.Add(r.Location);
             r.SetBlock(position, value);
         }
 
@@ -224,6 +228,8 @@ namespace LibMinecraft.Model
         {
             Region r = GetRegion(Location);
             Location -= r.Location;
+            if (!RegionsToSave.Contains(r.Location))
+                RegionsToSave.Add(r.Location);
             r.GetColumn(Location).SetChunk(Location, c);
         }
 
@@ -236,13 +242,16 @@ namespace LibMinecraft.Model
         /// <summary>
         /// Saves this instance.
         /// </summary>
-        /// <remarks>This will use whichever format (binary or NBT) that was
-        /// last used to save this world.</remarks>
         public virtual void Save()
         {
             if (string.IsNullOrEmpty(this.WorldDirectory))
                 return;
-            //SaveToNBT(this.WorldDirectory);
+            if (!Directory.Exists(this.WorldDirectory))
+                Directory.CreateDirectory(this.WorldDirectory);
+            foreach (Vector3 regionLocation in RegionsToSave)
+            {
+                Region r = GetRegion(regionLocation);
+            }
         }
 
         /// <summary>

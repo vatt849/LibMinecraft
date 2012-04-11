@@ -24,10 +24,13 @@ namespace LibMinecraft.Model
 
         public World World { get; set; }
 
+        public List<Vector3> ColumnsToSave { get; set; }
+
         public Region(World World, Vector3 Location)
         {
             this.World = World;
             MapColumns = new List<MapColumn>();
+            ColumnsToSave = new List<Vector3>();
             this.Location = Location;
         }
 
@@ -42,6 +45,8 @@ namespace LibMinecraft.Model
         {
             MapColumn mc = GetColumn(Location);
             Location -= mc.Location;
+            if (!ColumnsToSave.Contains(Location))
+                ColumnsToSave.Add(Location);
             mc.SetBlock(Location, Value);
         }
 

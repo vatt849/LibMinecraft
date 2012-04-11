@@ -79,7 +79,7 @@ namespace LibMinecraft.Model.Blocks
                 else if ((this.Metadata & (byte)Bed.North) == (byte)Bed.North)
                     direction = Vector3.North;
 
-                if ((this.Metadata & (byte)Bed.Head) != (byte)Bed.Head) //If the peice isn't the headboard
+                if ((this.Metadata & (byte)Bed.Head) != (byte)Bed.Head) //If the piece isn't the headboard
                 {
 
                     position += direction;

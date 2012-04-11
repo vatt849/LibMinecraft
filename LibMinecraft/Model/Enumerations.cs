@@ -626,7 +626,7 @@ namespace LibMinecraft.Model
     internal enum Pumpkin : byte { East = 0x2, West = 0x3, North = 0x4, South = 0x5 };
     internal enum PressurePlate : byte { NotPressed = 0x0, Pressed = 0x1 };
     internal enum Slab : byte { Stone = 0x0, SandStone = 0x1, Wooden = 0x2, Cobblestone = 0x3, Brick = 0x4, StoneBrick = 0x5, Stone2 = 0x6 };
-    internal enum Bed : byte { Isfoot = 0x8, West = 0x0, North = 0x1, East = 0x2, South = 0x3 };
+    internal enum Bed : byte { Head = 0x8, West = 0x0, North = 0x1, East = 0x2, South = 0x3, Occupied = 0x4 };
     internal enum Repeater : byte { East = 0x0, South = 0x1, West = 0x2, North = 0x3, Tick1 = 0x5, Tick2 = 0x6, Tick3 = 0x7, Tick4 = 0x8 };
     internal enum TallGrass : byte { DeadShrub = 0x0, TallGrass = 0x1, Fern = 0x2 };
     internal enum TrapDoors : byte { West = 0x0, East = 0x1, South = 0x2, North = 0x3, Open = 0x4 };

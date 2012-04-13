@@ -76,6 +76,18 @@ namespace LibMinecraft.Model
             }
         }
 
+        /// <summary>
+        /// (Re)generates a given column.  This does not update
+        /// any connected clients on a server.
+        /// </summary>
+        /// <param name="Location"></param>
+        public void GenerateColumn(Vector3 Location)
+        {
+            Region r = GetRegion(Location);
+            RegionsToSave.Add(r.Location);
+            Level.WorldGenerator.GenerateColumn(Location, r, Dimension, Level.Seed);
+        }
+
         public void AddEntity(Entity Entity)
         {
             this.Entities.Add(Entity);
@@ -250,7 +262,40 @@ namespace LibMinecraft.Model
                 Directory.CreateDirectory(this.WorldDirectory);
             foreach (Vector3 regionLocation in RegionsToSave)
             {
-                Region r = GetRegion(regionLocation);
+                Region region = GetRegion(regionLocation);
+                string regionFile = Path.Combine(WorldDirectory,
+                    string.Format("r.{0}.{1}.mca", region.Location.X / 32, region.Location.Z / 32));
+                if (!File.Exists(regionFile))
+                    CreateEmptyRegion(regionFile);
+
+                // Create the region's NBT blob
+                NbtFile regionNbt = new NbtFile();
+                regionNbt.RootTag = new NbtCompound();
+
+                foreach (MapColumn mc in region.MapColumns)
+                {
+                    NbtCompound level = new NbtCompound("Level");
+                    level.Tags.Add(new NbtByte("TerrainPopulated", 1));
+                    level.Tags.Add(new NbtInt("xPos", (int)region.Location.X));
+                    level.Tags.Add(new NbtInt("zPos", (int)region.Location.Z));
+                    level.Tags.Add(new NbtLong("LastUpdate", region.LastUpdated.Ticks));
+                    level.Tags.Add(new NbtByteArray("Biomes", mc.Biomes));
+                    // TODO: finish populating column NBT
+                }
+
+                using (Stream regionStream = File.Open(regionFile, FileMode.Open))
+                {
+                    
+                }
+            }
+        }
+
+        private void CreateEmptyRegion(string regionFile)
+        {
+            using (Stream regionStream = File.Open(regionFile, FileMode.Create))
+            {
+                // Create blank region header
+                regionStream.Write(new byte[sizeof(int) * 32 * 32], 0, sizeof(int) * 32 * 32);
             }
         }
 

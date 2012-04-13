@@ -270,14 +270,14 @@ namespace LibMinecraft.Model
             Nether.WorldDirectory = Path.Combine(SaveDirectory, "DIM1", "region");
             if (!Directory.Exists(Path.Combine(SaveDirectory, "DIM-1")))
                 Directory.CreateDirectory(Path.Combine(SaveDirectory, "DIM-1"));
-            Nether.WorldDirectory = Path.Combine(SaveDirectory, "DIM-1", "region");
+            TheEnd.WorldDirectory = Path.Combine(SaveDirectory, "DIM-1", "region");
             if (!Directory.Exists(Path.Combine(SaveDirectory, "players")))
                 Directory.CreateDirectory(Path.Combine(SaveDirectory, "players"));
 
             Save(server);
         }
 
-        public void Save(MultiplayerServer server)
+        public void Save(MultiplayerServer server) // TODO: Singleplayer world save methods (and generic non-server/client dependent save methods)
         {
             if (string.IsNullOrEmpty(SaveDirectory))
                 return;

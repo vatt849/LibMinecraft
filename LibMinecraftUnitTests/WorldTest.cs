@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using LibMinecraft.Model.Blocks;
 using LibMinecraft.Server;
+using LibMinecraft.Model.Entities;
+using System.IO;
 
 namespace LibMinecraftUnitTests
 {
@@ -100,6 +102,35 @@ namespace LibMinecraftUnitTests
             b = Level.Overworld.GetBlock(new Vector3(1, 17, 1));
 
             Assert.IsInstanceOfType(b, typeof(AirBlock));
+        }
+
+        [TestMethod()]
+        public void AnvilSaveTest()
+        {
+            Level level = new Level(new DefaultGenerator());
+            // Generate some columns
+            for (int x = -5; x < 5; x++)
+            {
+                for (int z = -5; z < 5; z++)
+                {
+                    level.Overworld.GenerateColumn(new Vector3(x, 0, z));
+                    level.Nether.GenerateColumn(new Vector3(x, 0, z));
+                    level.TheEnd.GenerateColumn(new Vector3(x, 0, z));
+                }
+            }
+
+            MultiplayerServer mserver = new MultiplayerServer(new MinecraftServer());
+            level.Save("world", mserver);
+
+            Assert.IsTrue(Directory.Exists("world"));
+            Assert.IsTrue(Directory.Exists("world/DIM1"));
+            Assert.IsTrue(Directory.Exists("world/DIM-1"));
+            Assert.IsTrue(Directory.Exists("world/region"));
+            Assert.IsTrue(Directory.Exists("world/players"));
+            Assert.IsTrue(Directory.Exists("world/data"));
+            Assert.IsTrue(Directory.Exists("world/DIM1/region"));
+            Assert.IsTrue(Directory.Exists("world/DIM-1/region"));
+            Assert.IsTrue(File.Exists("world/level.dat"));
         }
     }
 }

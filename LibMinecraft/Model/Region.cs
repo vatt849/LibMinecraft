@@ -18,6 +18,10 @@ namespace LibMinecraft.Model
         /// </summary>
         public const int Width = 32, Depth = 32;
 
+        public bool IsGenerated { get; set; } // TODO: Use this value
+
+        public DateTime LastUpdated { get; set; } // TODO: Use this value
+
         public Vector3 Location { get; set; }
 
         public List<MapColumn> MapColumns;

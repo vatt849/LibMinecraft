@@ -270,6 +270,16 @@ namespace LibMinecraft.Model
         }
 
         /// <summary>
+        /// Returns the absolute value of the given Vector3
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static Vector3 Abs(Vector3 value)
+        {
+            return new Vector3(Math.Abs(value.X), Math.Abs(value.Y), Math.Abs(value.Z));
+        }
+
+        /// <summary>
         /// The toString function for Vector3.
         /// </summary>
         /// <returns>Returns a formatted vector string (X,Y,Z)</returns>

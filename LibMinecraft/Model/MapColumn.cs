@@ -74,5 +74,10 @@ namespace LibMinecraft.Model
             Chunks[index].Location = Location;
             Chunks[index] = Chunk;
         }
+
+        public override string ToString()
+        {
+            return Location.ToString();
+        }
     }
 }

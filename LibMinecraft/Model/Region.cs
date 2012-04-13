@@ -49,8 +49,11 @@ namespace LibMinecraft.Model
         {
             MapColumn mc = GetColumn(Location);
             Location -= mc.Location;
-            if (!ColumnsToSave.Contains(Location))
-                ColumnsToSave.Add(Location);
+            lock (ColumnsToSave)
+            {
+                if (!ColumnsToSave.Contains(mc.Location))
+                    ColumnsToSave.Add(mc.Location);
+            }
             mc.SetBlock(Location, Value);
         }
 
@@ -61,11 +64,15 @@ namespace LibMinecraft.Model
         /// <param name="Location"></param>
         public MapColumn GetColumn(Vector3 Location)
         {
-            // Align the location to a chunk
-            Vector3 coords = Location.Clone();
-            coords.X = ((int)coords.X & ~0xf);
+            // Align the location to a column
+            Vector3 coords = Location.Floor().Clone();
+            coords.X = ((int)Location.X) % Region.Width;
             coords.Y = 0;
-            coords.Z = ((int)coords.Z & ~0xf);
+            coords.Z = ((int)Location.Z) % Region.Depth;
+            if (Location.X < 0)
+                coords.X = 32 + coords.X;
+            if (Location.Z < 0)
+                coords.Z = 32 + coords.Z;
             // Retrieve a column, or generate a new one
             foreach (MapColumn c in MapColumns)
             {
@@ -74,10 +81,15 @@ namespace LibMinecraft.Model
             }
             
             // Generate a column
-            MapColumn mc = new MapColumn(this, coords);
-            mc = this.World.Level.WorldGenerator.GenerateColumn(mc.Location, this,
+            MapColumn mc = this.World.Level.WorldGenerator.GenerateColumn(coords, this,
                 this.World.Dimension, this.World.Level.Seed);
+            mc.Location = coords;
             MapColumns.Add(mc);
+            lock (ColumnsToSave)
+            {
+                if (!ColumnsToSave.Contains(mc.Location))
+                    ColumnsToSave.Add(mc.Location);
+            }
             return mc;
         }
     }

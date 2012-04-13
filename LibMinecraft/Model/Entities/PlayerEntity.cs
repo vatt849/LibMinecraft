@@ -71,25 +71,6 @@ namespace LibMinecraft.Model.Entities
             }
         }
 
-        private bool _OnGround;
-        public bool OnGround
-        {
-            get
-            {
-                return _OnGround;
-            }
-            set
-            {
-                if (!Equals(_OnGround, value) && PropertyChanged != null)
-                {
-                    _OnGround = value;
-                    PropertyChanged(this, new PropertyChangedEventArgs("OnGround"));
-                }
-                else
-                    _OnGround = value;
-            }
-        }
-
         private short _Health;
         public short Health
         {

@@ -11,6 +11,7 @@ using ICSharpCode.SharpZipLib.Zip.Compression;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using LibNbt;
 using LibNbt.Tags;
+using LibMinecraft.Model.Packets;
 
 namespace LibMinecraft.Model
 {
@@ -84,8 +85,23 @@ namespace LibMinecraft.Model
         public void GenerateColumn(Vector3 Location)
         {
             Region r = GetRegion(Location);
-            RegionsToSave.Add(r.Location);
-            Level.WorldGenerator.GenerateColumn(Location, r, Dimension, Level.Seed);
+            if (!RegionsToSave.Contains(r.Location))
+                RegionsToSave.Add(r.Location);
+            Location -= r.Location;
+            Vector3 coords = Location.Floor().Clone();
+            coords.X = ((int)Location.X) % Region.Width;
+            coords.Y = 0;
+            coords.Z = ((int)Location.Z) % Region.Depth;
+            if (Location.X < 0)
+                coords.X = 32 + coords.X;
+            if (Location.Z < 0)
+                coords.Z = 32 + coords.Z;
+            r.MapColumns.Add(Level.WorldGenerator.GenerateColumn(coords, r, Dimension, Level.Seed));
+            lock (r.ColumnsToSave)
+            {
+                if (!r.ColumnsToSave.Contains(r.MapColumns.Last().Location))
+                    r.ColumnsToSave.Add(r.MapColumns.Last().Location);
+            }
         }
 
         public void AddEntity(Entity Entity)
@@ -213,10 +229,14 @@ namespace LibMinecraft.Model
 
         public Region GetRegion(Vector3 position)
         {
-            Vector3 offset = position.Floor();
-            offset.X = ((int)offset.X) / Region.Width * Region.Width;
+            Vector3 offset = position.Floor().Clone();
+            offset.X = ((int)position.X) / (Region.Width * Chunk.Width);
             offset.Y = 0;
-            offset.Z = ((int)offset.Z) / Region.Width * Region.Depth;
+            offset.Z = ((int)position.Z) / (Region.Depth * Chunk.Depth);
+            if (position.X < 0)
+                offset.X--;
+            if (position.Z < 0)
+                offset.Z--;
             foreach (Region r in Regions)
             {
                 if (r.Location.Equals(offset))
@@ -224,6 +244,8 @@ namespace LibMinecraft.Model
             }
             Region region = new Region(this, offset);
             Regions.Add(region);
+            if (!RegionsToSave.Contains(region.Location))
+                RegionsToSave.Add(region.Location);
             return region;
         }
 
@@ -264,29 +286,104 @@ namespace LibMinecraft.Model
             {
                 Region region = GetRegion(regionLocation);
                 string regionFile = Path.Combine(WorldDirectory,
-                    string.Format("r.{0}.{1}.mca", region.Location.X / 32, region.Location.Z / 32));
+                    string.Format("r.{0}.{1}.mca", region.Location.X, region.Location.Z));
                 if (!File.Exists(regionFile))
                     CreateEmptyRegion(regionFile);
 
-                // Create the region's NBT blob
-                NbtFile regionNbt = new NbtFile();
-                regionNbt.RootTag = new NbtCompound();
-
-                foreach (MapColumn mc in region.MapColumns)
+                // Create the region's NBT blobs
+                lock (region.ColumnsToSave)
                 {
-                    NbtCompound level = new NbtCompound("Level");
-                    level.Tags.Add(new NbtByte("TerrainPopulated", 1));
-                    level.Tags.Add(new NbtInt("xPos", (int)region.Location.X));
-                    level.Tags.Add(new NbtInt("zPos", (int)region.Location.Z));
-                    level.Tags.Add(new NbtLong("LastUpdate", region.LastUpdated.Ticks));
-                    level.Tags.Add(new NbtByteArray("Biomes", mc.Biomes));
-                    // TODO: finish populating column NBT
+                    foreach (Vector3 mapColumn in region.ColumnsToSave)
+                    {
+                        NbtFile regionNbt = new NbtFile();
+                        regionNbt.RootTag = new NbtCompound();
+
+                        MapColumn mc = region.GetColumn(mapColumn);
+                        NbtCompound level = new NbtCompound("Level");
+                        level.Tags.Add(new NbtByte("TerrainPopulated", 1));
+                        level.Tags.Add(new NbtInt("xPos", (int)region.Location.X));
+                        level.Tags.Add(new NbtInt("zPos", (int)region.Location.Z));
+                        level.Tags.Add(new NbtLong("LastUpdate", region.LastUpdated.Ticks));
+                        level.Tags.Add(new NbtByteArray("Biomes", mc.Biomes));
+                        NbtList entityList = new NbtList("Entities");
+                        Cuboid columnCollisionBox = new Cuboid(mc.Location + region.Location, new Vector3(16, 256, 16));
+                        foreach (Entity entity in Entities.Where(e => !(e is PlayerEntity)
+                            && !(e is FallingEnderDragonEggEntity)
+                            && !(e is FallingSandEntity)
+                            && !(e is FallingGravelEntity) // TODO: Add a mob entity meta-class and only save it
+                            && e.CollisionBox.Intersects(columnCollisionBox)))
+                        {
+                            entityList.Tags.Add(entity.GetEntityCompound());
+                        }
+                        level.Tags.Add(entityList);
+                        NbtList sections = new NbtList("Sections");
+                        foreach (Chunk chunk in mc.Chunks.Where(c => !c.IsAir))
+                        {
+                            NbtCompound chunkCompound = new NbtCompound();
+                            chunkCompound.Tags.Add(new NbtByte("Y", (byte)(chunk.Location.Y / 16)));
+                            chunkCompound.Tags.Add(new NbtByteArray("BlockLight", chunk.BlockLight));
+                            chunkCompound.Tags.Add(new NbtByteArray("Blocks", chunk.Blocks));
+                            chunkCompound.Tags.Add(new NbtByteArray("Data", chunk.Metadata));
+                            chunkCompound.Tags.Add(new NbtByteArray("SkyLight", chunk.SkyLight));
+                            sections.Tags.Add(chunkCompound);
+                        }
+                        level.Tags.Add(sections);
+                        // TODO: Tile Entities
+                        level.Tags.Add(new NbtByteArray("HeightMap", mc.HeightMap));
+                        regionNbt.RootTag.Tags.Add(level);
+
+                        MemoryStream compressionStream = new MemoryStream();
+                        regionNbt.SaveFile(compressionStream, true);
+                        byte[] compressedNbt = compressionStream.GetBuffer();
+                        int actualLength = compressedNbt.Length;
+                        if (compressedNbt.Length % 4096 != 0)
+                            compressedNbt = compressedNbt.Concat(new byte[compressedNbt.Length % 4096]).ToArray();
+
+                        using (Stream regionStream = File.Open(regionFile, FileMode.Open))
+                        {
+                            long tableOffset = (long)(mc.Location.X  * 32 + mc.Location.Z);
+
+                            // Search for a new sector to hold the NBT
+                            byte neededSectors = (byte)(compressedNbt.Length / 4096 + 1);
+                            long newSectorOffset = regionStream.Length;
+
+                            regionStream.Seek(0, SeekOrigin.Begin);
+                            int previousLocation = sizeof(int) * 32 * 32 * 2;
+                            byte previousLength = 0;
+
+                            bool columnWritten = false;
+                            while (regionStream.Position < sizeof(int) * 32 * 32) // Read through the header
+                            {
+                                int value = Packet.ReadInt(regionStream);
+                                byte usedSectors = (byte)(value & 0xFF);
+                                int sectorOffset = value >> 8;
+                                if (usedSectors != 0 && sectorOffset - (previousLocation + (previousLength * 4096)) < neededSectors)
+                                {
+                                    // We passed an empty sector large enough to hold the chunk
+                                    newSectorOffset = previousLocation + (previousLength * 4096);
+                                    break;
+                                }
+                                previousLength = usedSectors;
+                                previousLocation = sectorOffset;
+                            }
+
+                            // newSectorOffset should point to a good place to write the column to
+                            regionStream.Seek(newSectorOffset, SeekOrigin.Begin);
+
+                            byte[] sectionHeader = Packet.MakeInt(actualLength).Concat(new byte[] { 1 }).ToArray();
+                            compressedNbt = sectionHeader.Concat(compressedNbt).ToArray();
+
+                            regionStream.Write(compressedNbt, 0, compressedNbt.Length);
+                            regionStream.Seek(tableOffset, SeekOrigin.Begin);
+                            int tableValue = (int)(newSectorOffset << 8 | neededSectors);
+                            Packet.WriteInt(regionStream, tableValue);
+                            regionStream.Flush();
+                            regionStream.Close();
+                        }
+                    }
                 }
 
-                using (Stream regionStream = File.Open(regionFile, FileMode.Open))
-                {
-                    
-                }
+                region.ColumnsToSave.Clear();
             }
         }
 
@@ -295,7 +392,7 @@ namespace LibMinecraft.Model
             using (Stream regionStream = File.Open(regionFile, FileMode.Create))
             {
                 // Create blank region header
-                regionStream.Write(new byte[sizeof(int) * 32 * 32], 0, sizeof(int) * 32 * 32);
+                regionStream.Write(new byte[sizeof(int) * 32 * 32 * 2], 0, sizeof(int) * 32 * 32 * 2); // TODO: Timestamps
             }
         }
 

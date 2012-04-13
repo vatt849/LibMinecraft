@@ -5,6 +5,7 @@ using System.Text;
 using System.ComponentModel;
 using LibMinecraft.Model.Blocks;
 using LibMinecraft.Server;
+using LibNbt.Tags;
 
 namespace LibMinecraft.Model.Entities
 {
@@ -34,6 +35,8 @@ namespace LibMinecraft.Model.Entities
             this._Location = Location;
             this.Velocity = Vector3.Zero;
         }
+
+        public bool OnGround { get; set; }
 
         /// <summary>
         /// The amount of time this entity will spend
@@ -286,6 +289,31 @@ namespace LibMinecraft.Model.Entities
             }
             else
                 this.Location += this.Velocity;
+        }
+
+        public virtual NbtCompound GetEntityCompound()
+        {
+            NbtCompound compound = new NbtCompound();
+            compound.Tags.Add(new NbtShort("OnGround", (byte)(OnGround ? 1 : 0)));
+            compound.Tags.Add(new NbtShort("Air", 0)); // TODO
+            compound.Tags.Add(new NbtShort("AttackTime", 0)); // TODO
+            compound.Tags.Add(new NbtShort("DeathTime", 0)); // TODO
+            compound.Tags.Add(new NbtShort("Fire", TimeOnFire));
+            NbtList motionList = new NbtList("Motion");
+            motionList.Tags.Add(new NbtDouble(Velocity.X));
+            motionList.Tags.Add(new NbtDouble(Velocity.Y));
+            motionList.Tags.Add(new NbtDouble(Velocity.Z));
+            compound.Tags.Add(motionList);
+            NbtList positionList = new NbtList("Pos");
+            positionList.Tags.Add(new NbtDouble(Location.X));
+            positionList.Tags.Add(new NbtDouble(Location.Y));
+            positionList.Tags.Add(new NbtDouble(Location.Z));
+            compound.Tags.Add(motionList);
+            NbtList rotationList = new NbtList("Rotation");
+            rotationList.Tags.Add(new NbtFloat((float)Rotation.X));
+            rotationList.Tags.Add(new NbtFloat((float)Rotation.Y));
+            compound.Tags.Add(rotationList);
+            return compound;
         }
     }
 }

@@ -112,6 +112,9 @@ namespace LibMinecraft.Model
             Overworld.OnBlockChange += new EventHandler<BlockChangeEventArgs>(World_OnBlockChange);
 
             Spawn = new Vector3(0, 17, 0);
+            byte[] seed = new byte[sizeof(long)];
+            MultiplayerServer.Random.NextBytes(seed);
+            Seed = BitConverter.ToInt64(seed, 0);
 
             GameMode = GameMode.Creative;
             Difficulty = Model.Difficulty.Normal;
@@ -287,25 +290,27 @@ namespace LibMinecraft.Model
                 Directory.CreateDirectory(Path.Combine(SaveDirectory, "players"));
 
             NbtFile file = new NbtFile("level.dat");
-            file.RootTag = new NbtCompound("Data");
-            file.RootTag.Tags.Add(new NbtByte("hardcore", (byte)(this.GameMode == GameMode.Hardcore ? 1 : 0)));
-            file.RootTag.Tags.Add(new NbtByte("MapFeatures", (byte)(WorldGenerator.GenerateStructures ? 1 : 0)));
-            file.RootTag.Tags.Add(new NbtByte("raining", (byte)(WeatherManager.WeatherOccuring ? 1 : 0)));
-            file.RootTag.Tags.Add(new NbtByte("thundering", (byte)(WeatherManager.EnableThunder ? 1 : 0)));
-            file.RootTag.Tags.Add(new NbtInt("GameType", (int)GameMode));
-            file.RootTag.Tags.Add(new NbtInt("generatorVersion", 0));
-            file.RootTag.Tags.Add(new NbtInt("rainTime", WeatherManager.TicksUntilUpdate));
-            file.RootTag.Tags.Add(new NbtInt("SpawnX", (int)Spawn.X));
-            file.RootTag.Tags.Add(new NbtInt("SpawnY", (int)Spawn.Y));
-            file.RootTag.Tags.Add(new NbtInt("SpawnZ", (int)Spawn.Z));
-            file.RootTag.Tags.Add(new NbtInt("thunderTime", WeatherManager.TicksUntilThunder));
-            file.RootTag.Tags.Add(new NbtInt("version", 19113));
-            file.RootTag.Tags.Add(new NbtLong("LastPlayed", DateTime.Now.ToFileTimeUtc()));
-            file.RootTag.Tags.Add(new NbtLong("RandomSeed", Seed));
-            file.RootTag.Tags.Add(new NbtLong("SizeOnDisk", 0));
-            file.RootTag.Tags.Add(new NbtLong("Time", Time));
-            file.RootTag.Tags.Add(new NbtString("generatorName", WorldGenerator.Name));
-            file.RootTag.Tags.Add(new NbtString("levelName", Name));
+            NbtCompound rootTag = new NbtCompound("Data");
+            rootTag.Tags.Add(new NbtByte("hardcore", (byte)(this.GameMode == GameMode.Hardcore ? 1 : 0)));
+            rootTag.Tags.Add(new NbtByte("MapFeatures", (byte)(WorldGenerator.GenerateStructures ? 1 : 0)));
+            rootTag.Tags.Add(new NbtByte("raining", (byte)(WeatherManager.WeatherOccuring ? 1 : 0)));
+            rootTag.Tags.Add(new NbtByte("thundering", (byte)(WeatherManager.EnableThunder ? 1 : 0)));
+            rootTag.Tags.Add(new NbtInt("GameType", (int)GameMode));
+            rootTag.Tags.Add(new NbtInt("generatorVersion", 0));
+            rootTag.Tags.Add(new NbtInt("rainTime", WeatherManager.TicksUntilUpdate));
+            rootTag.Tags.Add(new NbtInt("SpawnX", (int)Spawn.X));
+            rootTag.Tags.Add(new NbtInt("SpawnY", (int)Spawn.Y));
+            rootTag.Tags.Add(new NbtInt("SpawnZ", (int)Spawn.Z));
+            rootTag.Tags.Add(new NbtInt("thunderTime", WeatherManager.TicksUntilThunder));
+            rootTag.Tags.Add(new NbtInt("version", 19133));
+            rootTag.Tags.Add(new NbtLong("LastPlayed", DateTime.Now.ToFileTimeUtc()));
+            rootTag.Tags.Add(new NbtLong("RandomSeed", Seed));
+            rootTag.Tags.Add(new NbtLong("SizeOnDisk", 0));
+            rootTag.Tags.Add(new NbtLong("Time", Time));
+            rootTag.Tags.Add(new NbtString("generatorName", WorldGenerator.Name.ToLower()));
+            rootTag.Tags.Add(new NbtString("LevelName", Name));
+            file.RootTag = new NbtCompound();
+            file.RootTag.Tags.Add(rootTag);
             file.SaveFile(Path.Combine(SaveDirectory, "level.dat"));
 
             foreach (RemoteClient rc in server.GetClientsInLevel(this))

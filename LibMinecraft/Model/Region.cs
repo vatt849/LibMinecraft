@@ -73,6 +73,8 @@ namespace LibMinecraft.Model
                 coords.X = 32 + coords.X;
             if (Location.Z < 0)
                 coords.Z = 32 + coords.Z;
+            //if ((coords.X == 0 || coords.Z == 0) && this.Location.X == -1 && this.Location.Z == -1)
+                //System.Diagnostics.Debugger.Break();
             // Retrieve a column, or generate a new one
             foreach (MapColumn c in MapColumns)
             {
@@ -91,6 +93,35 @@ namespace LibMinecraft.Model
                     ColumnsToSave.Add(mc.Location);
             }
             return mc;
+        }
+
+        public void GenerateColumn(Vector3 Location)
+        {
+            // Align the location to a column
+            Vector3 coords = Location.Floor().Clone();
+            coords.X = ((int)Location.X) % Region.Width;
+            coords.Y = 0;
+            coords.Z = ((int)Location.Z) % Region.Depth;
+            if (Location.X < 0)
+                coords.X = 32 + coords.X;
+            if (Location.Z < 0)
+                coords.Z = 32 + coords.Z;
+            if ((coords.X == 0 || coords.Z == 0) && this.Location.X == -1 && this.Location.Z == -1)
+                System.Diagnostics.Debugger.Break();
+
+            if (this.MapColumns.Where(m => m.Location == coords).Count() != 0)
+                this.MapColumns.Remove(this.MapColumns.Where(m => m.Location == coords).First());
+
+            // Generate a column
+            MapColumn mc = this.World.Level.WorldGenerator.GenerateColumn(coords, this,
+                this.World.Dimension, this.World.Level.Seed);
+            mc.Location = coords;
+            MapColumns.Add(mc);
+            lock (ColumnsToSave)
+            {
+                if (!ColumnsToSave.Contains(mc.Location))
+                    ColumnsToSave.Add(mc.Location);
+            }
         }
     }
 }

@@ -84,24 +84,12 @@ namespace LibMinecraft.Model
         /// <param name="Location"></param>
         public void GenerateColumn(Vector3 Location)
         {
+            Vector3 temp = Location.Clone();
             Region r = GetRegion(Location);
             if (!RegionsToSave.Contains(r.Location))
                 RegionsToSave.Add(r.Location);
-            Location -= r.Location;
-            Vector3 coords = Location.Floor().Clone();
-            coords.X = ((int)Location.X) % Region.Width;
-            coords.Y = 0;
-            coords.Z = ((int)Location.Z) % Region.Depth;
-            if (Location.X < 0)
-                coords.X = 32 + coords.X;
-            if (Location.Z < 0)
-                coords.Z = 32 + coords.Z;
-            r.MapColumns.Add(Level.WorldGenerator.GenerateColumn(coords, r, Dimension, Level.Seed));
-            lock (r.ColumnsToSave)
-            {
-                if (!r.ColumnsToSave.Contains(r.MapColumns.Last().Location))
-                    r.ColumnsToSave.Add(r.MapColumns.Last().Location);
-            }
+            Location -= (r.Location * new Vector3(Region.Width, 1, Region.Depth));
+            r.GenerateColumn(Location);
         }
 
         public void AddEntity(Entity Entity)
@@ -282,6 +270,7 @@ namespace LibMinecraft.Model
                 return;
             if (!Directory.Exists(this.WorldDirectory))
                 Directory.CreateDirectory(this.WorldDirectory);
+            Deflater deflater = new Deflater(5);
             foreach (Vector3 regionLocation in RegionsToSave)
             {
                 Region region = GetRegion(regionLocation);
@@ -316,75 +305,99 @@ namespace LibMinecraft.Model
                             entityList.Tags.Add(entity.GetEntityCompound());
                         }
                         level.Tags.Add(entityList);
+                        level.Tags.Add(new NbtList("TileEntities"));
                         NbtList sections = new NbtList("Sections");
                         foreach (Chunk chunk in mc.Chunks.Where(c => !c.IsAir))
                         {
                             NbtCompound chunkCompound = new NbtCompound();
                             chunkCompound.Tags.Add(new NbtByte("Y", (byte)(chunk.Location.Y / 16)));
-                            chunkCompound.Tags.Add(new NbtByteArray("BlockLight", chunk.BlockLight));
+                            chunkCompound.Tags.Add(new NbtByteArray("BlockLight", chunk.GetBlockLight()));
                             chunkCompound.Tags.Add(new NbtByteArray("Blocks", chunk.Blocks));
-                            chunkCompound.Tags.Add(new NbtByteArray("Data", chunk.Metadata));
-                            chunkCompound.Tags.Add(new NbtByteArray("SkyLight", chunk.SkyLight));
+                            chunkCompound.Tags.Add(new NbtByteArray("Data", chunk.GetMetadata()));
+                            chunkCompound.Tags.Add(new NbtByteArray("SkyLight", chunk.GetSkyLight()));
                             sections.Tags.Add(chunkCompound);
                         }
                         level.Tags.Add(sections);
                         // TODO: Tile Entities
-                        level.Tags.Add(new NbtByteArray("HeightMap", mc.HeightMap));
-                        regionNbt.RootTag.Tags.Add(level);
+                        level.Tags.Add(new NbtIntArray("HeightMap", mc.HeightMap));
+                        regionNbt.RootTag = level;
 
-                        MemoryStream compressionStream = new MemoryStream();
-                        regionNbt.SaveFile(compressionStream, true);
-                        byte[] compressedNbt = compressionStream.GetBuffer();
-                        int actualLength = compressedNbt.Length;
-                        if (compressedNbt.Length % 4096 != 0)
-                            compressedNbt = compressedNbt.Concat(new byte[compressedNbt.Length % 4096]).ToArray();
+                        MemoryStream memoryStream = new MemoryStream();
+                        regionNbt.SaveFile(memoryStream);
+                        regionNbt.SaveFile("chunk-" + mc.Location.ToString().Replace(',', '-').Replace(" ", "").Replace("<", "_").Replace(">", "") + ".nbt");
+                        byte[] rawNbt = memoryStream.GetBuffer();
+                        deflater.SetInput(rawNbt);
+                        deflater.Finish();
+                        byte[] compressedNbt = new byte[rawNbt.Length];
+                        int compressedLength = deflater.Deflate(compressedNbt);
+                        compressedNbt = compressedNbt.Take(compressedLength).ToArray();
+                        deflater.Reset();
+
+                        byte columnSectors = (byte)((compressedLength + 5) / 4096 + 1); // +5 for the header
 
                         using (Stream regionStream = File.Open(regionFile, FileMode.Open))
                         {
-                            long tableOffset = (long)(mc.Location.X  * 32 + mc.Location.Z);
-
-                            // Search for a new sector to hold the NBT
-                            byte neededSectors = (byte)(compressedNbt.Length / 4096 + 1);
-                            long newSectorOffset = regionStream.Length;
-
-                            regionStream.Seek(0, SeekOrigin.Begin);
-                            int previousLocation = sizeof(int) * 32 * 32 * 2;
-                            byte previousLength = 0;
-
-                            bool columnWritten = false;
-                            while (regionStream.Position < sizeof(int) * 32 * 32) // Read through the header
-                            {
-                                int value = Packet.ReadInt(regionStream);
-                                byte usedSectors = (byte)(value & 0xFF);
-                                int sectorOffset = value >> 8;
-                                if (usedSectors != 0 && sectorOffset - (previousLocation + (previousLength * 4096)) < neededSectors)
-                                {
-                                    // We passed an empty sector large enough to hold the chunk
-                                    newSectorOffset = previousLocation + (previousLength * 4096);
-                                    break;
-                                }
-                                previousLength = usedSectors;
-                                previousLocation = sectorOffset;
-                            }
-
-                            // newSectorOffset should point to a good place to write the column to
-                            regionStream.Seek(newSectorOffset, SeekOrigin.Begin);
-
-                            byte[] sectionHeader = Packet.MakeInt(actualLength).Concat(new byte[] { 1 }).ToArray();
-                            compressedNbt = sectionHeader.Concat(compressedNbt).ToArray();
-
-                            regionStream.Write(compressedNbt, 0, compressedNbt.Length);
-                            regionStream.Seek(tableOffset, SeekOrigin.Begin);
-                            int tableValue = (int)(newSectorOffset << 8 | neededSectors);
-                            Packet.WriteInt(regionStream, tableValue);
-                            regionStream.Flush();
-                            regionStream.Close();
+                            AllocateChunkSectors(regionStream, columnSectors, mapColumn);
+                            Packet.WriteInt(regionStream, compressedLength);
+                            regionStream.WriteByte(2); // 2 = zLib compression
+                            regionStream.Write(compressedNbt, 0, compressedLength);
                         }
                     }
                 }
 
                 region.ColumnsToSave.Clear();
             }
+        }
+
+        private const int HeaderSize = 32 * 32 * 4 * 2;
+
+        private void AllocateChunkSectors(Stream regionStream, byte columnSectors, Vector3 columnLocation)
+        {
+            // Search for an allocate the sectors requested, then advance the stream to where it may be written to
+            regionStream.Seek(0, SeekOrigin.Begin);
+            int tableOffset = (int)columnLocation.X + ((int)columnLocation.Z * 32);
+
+            // Find a sector large enough to hold this column
+            int previousSector = int.MaxValue;
+            int sectorToUse = -1;
+
+            for (int z = 0; z < 32; z++)
+                for (int x = 0; x < 32; x++)
+                {
+                    int packedSector = Packet.ReadInt(regionStream); // Packet.ReadInt reads with the proper endianness
+                    byte sectorSize = (byte)(packedSector & 0xFF);
+                    int sectorOffset = tableOffset >> 8 * 4096;
+
+                    if (sectorOffset - previousSector >= columnSectors * 4096)
+                    {
+                        sectorToUse = previousSector;
+                        break;
+                    }
+
+                    previousSector = sectorOffset + (sectorSize * 4096);
+                }
+            if (sectorToUse == -1)
+            {
+                regionStream.Seek(0, SeekOrigin.End);
+                sectorToUse = (int)regionStream.Position;
+                regionStream.Write(new byte[columnSectors * 4096], 0, columnSectors * 4096);
+            }
+
+            // Write the value in the header
+            int tableValue = (sectorToUse / 4096) << 8 | columnSectors;
+            regionStream.Seek(tableOffset, SeekOrigin.Begin);
+            Packet.WriteInt(regionStream, tableValue);
+
+            // Seek to the allocated sector and return
+            regionStream.Seek(sectorToUse, SeekOrigin.Begin);
+        }
+
+        /// <summary>
+        /// Defragments region files
+        /// </summary>
+        public void Defragment()
+        {
+            // TODO
         }
 
         private void CreateEmptyRegion(string regionFile)

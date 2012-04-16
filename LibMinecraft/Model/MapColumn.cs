@@ -17,7 +17,7 @@ namespace LibMinecraft.Model
         public bool IsGenerated { get; set; }
         public long LastUpdate { get; set; }
         public byte[] Biomes { get; set; }
-        public byte[] HeightMap { get; set; }
+        public int[] HeightMap { get; set; }
         public Region Region { get; set; }
         public List<Entity> Entities { get; set; }
 
@@ -29,7 +29,7 @@ namespace LibMinecraft.Model
             for (int i = 0; i < Chunks.Length; i++)
                 Chunks[i] = new Chunk(this, this.Location + new Vector3(0, i * 16, 0));
             Biomes = new byte[256];
-            HeightMap = new byte[256];
+            HeightMap = new int[256];
             IsGenerated = false;
             Entities = new List<Entity>();
         }

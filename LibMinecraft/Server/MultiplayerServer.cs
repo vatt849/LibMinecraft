@@ -500,7 +500,7 @@ namespace LibMinecraft.Server
                 l.WeatherManager.Tick(l, this);
                 foreach (World w in l.Worlds)
                     w.UpdateEntities();
-                if (ticksSinceSave >= SaveFrequency)
+                if (ticksSinceSave >= SaveFrequency && SaveFrequency != -1)
                     l.Save(this);
             }
             if (ticksSinceSave >= SaveFrequency)
@@ -567,7 +567,7 @@ namespace LibMinecraft.Server
                             packet.ReadPacket(client);
                             packet.HandlePacket(this, client);
                             client.LogPacket(packet);
-                            //LogPacket(packet, client, true);
+                            LogPacket(packet, client, true);
 
                             // Special packet event handlers
                             if (packet is LoginRequestPacket && client.LoggedIn)

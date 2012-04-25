@@ -43,6 +43,11 @@ Bugs?
 
 Both bugs and feature requests go [here](https://github.com/LibMinecraft/LibMinecraft/issues).
 
+Want to Contribute?
+-------------------
+
+Follow our guide: [PullRequestGuide.md](https://github.com/LibMinecraft/LibMinecraft/blob/master/PullRequestGuide.md).
+
 Links
 -----
 

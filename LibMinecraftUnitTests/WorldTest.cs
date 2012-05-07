@@ -5,6 +5,7 @@ using LibMinecraft.Model.Blocks;
 using LibMinecraft.Server;
 using LibMinecraft.Model.Entities;
 using System.IO;
+using System.Diagnostics;
 
 namespace LibMinecraftUnitTests
 {
@@ -131,6 +132,52 @@ namespace LibMinecraftUnitTests
             Assert.IsTrue(Directory.Exists("world/DIM1/region"));
             Assert.IsTrue(Directory.Exists("world/DIM-1/region"));
             Assert.IsTrue(File.Exists("world/level.dat"));
+
+            // Run debug-nbt on a chunk and debug-region on a region.
+            // Assumes that OpenNBT is located at C:\dev\opennbt
+            // Also only runs properly on Windows, which is fine because you can't run unit tests
+            // on Linux/Mac anyway.
+            string output, error;
+            StreamWriter writer;
+            if (File.Exists("C:\\dev\\opennbt\\scripts\\debug-nbt"))
+            {
+                Process debugNbt = new Process();
+                debugNbt.StartInfo = new ProcessStartInfo("python", "C:\\dev\\opennbt\\scripts\\debug-nbt \"" + Directory.GetCurrentDirectory() + "\\chunk-_0-0-0.nbt\"");
+                debugNbt.StartInfo.UseShellExecute = false;
+                debugNbt.StartInfo.RedirectStandardOutput = true;
+                debugNbt.StartInfo.RedirectStandardError = true;
+                debugNbt.Start();
+                output = debugNbt.StandardOutput.ReadToEnd();
+                error = debugNbt.StandardError.ReadToEnd();
+                debugNbt.WaitForExit();
+
+                writer = new StreamWriter("chunk-_0-0-0.nbt.txt");
+                writer.Write(output);
+                writer.Write(error);
+                writer.Close();
+            }
+            else
+                Assert.Inconclusive("debug-nbt not found, unable to validate chunk data.");
+
+            if (File.Exists("C:\\dev\\opennbt\\scripts\\debug-region"))
+            {
+                Process debugRegion = new Process();
+                debugRegion.StartInfo = new ProcessStartInfo("python", "C:\\dev\\opennbt\\scripts\\debug-region \"" + Directory.GetCurrentDirectory() + "\\world\\region\\r.0.0.mca\"");
+                debugRegion.StartInfo.UseShellExecute = false;
+                debugRegion.StartInfo.RedirectStandardOutput = true;
+                debugRegion.StartInfo.RedirectStandardError = true;
+                debugRegion.Start();
+                output = debugRegion.StandardOutput.ReadToEnd();
+                error = debugRegion.StandardError.ReadToEnd();
+                debugRegion.WaitForExit();
+
+                writer = new StreamWriter("r.0.0.mca.txt");
+                writer.Write(output);
+                writer.Write(error);
+                writer.Close();
+            }
+            else
+                Assert.Inconclusive("debug-region not found, unable to validate region data.");
         }
     }
 }

@@ -423,6 +423,7 @@
     <Compile Include="Model\Vector3.cs" />
     <Compile Include="Model\World.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RC4.cs" />
     <Compile Include="Server\ChunkManager.cs" />
     <Compile Include="Server\ServerEventArgs.cs" />
     <Compile Include="Server\MultiplayerServer.cs" />

@@ -40,6 +40,9 @@ namespace LibMinecraft.Model
 
         public Block GetBlock(Vector3 Location)
         {
+            Location.X = ((int)Location.X) % Region.Width / 16 * 16;
+            Location.Y = 0;
+            Location.Z = ((int)Location.Z) % Region.Depth / 16 * 16;
             MapColumn mc = GetColumn(Location);
             Location -= mc.Location;
             return mc.GetBlock(Location);
@@ -47,7 +50,11 @@ namespace LibMinecraft.Model
 
         public void SetBlock(Vector3 Location, Block Value)
         {
-            MapColumn mc = GetColumn(Location);
+            Vector3 columnLocation = Location.Clone();
+            columnLocation.X = ((int)Location.X) % Region.Width / 16 * 16;
+            columnLocation.Y = 0;
+            columnLocation.Z = ((int)Location.Z) % Region.Depth / 16 * 16;
+            MapColumn mc = GetColumn(columnLocation);
             Location -= mc.Location;
             lock (ColumnsToSave)
             {
@@ -73,8 +80,6 @@ namespace LibMinecraft.Model
                 coords.X = 32 + coords.X;
             if (Location.Z < 0)
                 coords.Z = 32 + coords.Z;
-            //if ((coords.X == 0 || coords.Z == 0) && this.Location.X == -1 && this.Location.Z == -1)
-                //System.Diagnostics.Debugger.Break();
             // Retrieve a column, or generate a new one
             foreach (MapColumn c in MapColumns)
             {

@@ -119,6 +119,7 @@ namespace LibMinecraftUnitTests
                     level.TheEnd.GenerateColumn(new Vector3(x, 0, z));
                 }
             }
+            level.SetBlock(new Vector3(10, 20, 10), new DiamondBlock());
 
             MultiplayerServer mserver = new MultiplayerServer(new MinecraftServer());
             level.Save("world", mserver);
@@ -172,6 +173,51 @@ namespace LibMinecraftUnitTests
                 debugRegion.WaitForExit();
 
                 writer = new StreamWriter("r.0.0.mca.txt");
+                writer.Write(output);
+                writer.Write(error);
+                writer.Close();
+
+                debugRegion = new Process();
+                debugRegion.StartInfo = new ProcessStartInfo("python", "C:\\dev\\opennbt\\scripts\\debug-region \"" + Directory.GetCurrentDirectory() + "\\world\\region\\r.-1.-1.mca\"");
+                debugRegion.StartInfo.UseShellExecute = false;
+                debugRegion.StartInfo.RedirectStandardOutput = true;
+                debugRegion.StartInfo.RedirectStandardError = true;
+                debugRegion.Start();
+                output = debugRegion.StandardOutput.ReadToEnd();
+                error = debugRegion.StandardError.ReadToEnd();
+                debugRegion.WaitForExit();
+
+                writer = new StreamWriter("r.-1.-1.mca.txt");
+                writer.Write(output);
+                writer.Write(error);
+                writer.Close();
+
+                debugRegion = new Process();
+                debugRegion.StartInfo = new ProcessStartInfo("python", "C:\\dev\\opennbt\\scripts\\debug-region \"" + Directory.GetCurrentDirectory() + "\\world\\region\\r.-1.0.mca\"");
+                debugRegion.StartInfo.UseShellExecute = false;
+                debugRegion.StartInfo.RedirectStandardOutput = true;
+                debugRegion.StartInfo.RedirectStandardError = true;
+                debugRegion.Start();
+                output = debugRegion.StandardOutput.ReadToEnd();
+                error = debugRegion.StandardError.ReadToEnd();
+                debugRegion.WaitForExit();
+
+                writer = new StreamWriter("r.-1.0.mca.txt");
+                writer.Write(output);
+                writer.Write(error);
+                writer.Close();
+
+                debugRegion = new Process();
+                debugRegion.StartInfo = new ProcessStartInfo("python", "C:\\dev\\opennbt\\scripts\\debug-region \"" + Directory.GetCurrentDirectory() + "\\world\\region\\r.0.-1.mca\"");
+                debugRegion.StartInfo.UseShellExecute = false;
+                debugRegion.StartInfo.RedirectStandardOutput = true;
+                debugRegion.StartInfo.RedirectStandardError = true;
+                debugRegion.Start();
+                output = debugRegion.StandardOutput.ReadToEnd();
+                error = debugRegion.StandardError.ReadToEnd();
+                debugRegion.WaitForExit();
+
+                writer = new StreamWriter("r.0.-1.mca.txt");
                 writer.Write(output);
                 writer.Write(error);
                 writer.Close();

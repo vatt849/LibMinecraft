@@ -34,7 +34,7 @@ Supported Languages
 Featured Projects
 -----------------
 
-[PartyCraft](http://partycraft.codeplex.com/) is a Minecraft server built on LibMinecraft, developed by the LibMinecraft team. Check it out!
+[PartyCraft](https://github.com/LibMinecraft/PartyCraft/) is a Minecraft server built on LibMinecraft, developed by the LibMinecraft team. Check it out!
 
 Tell us about your project, maybe we'll feature it!
 

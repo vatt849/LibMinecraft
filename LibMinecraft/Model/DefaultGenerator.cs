@@ -13,8 +13,8 @@ namespace LibMinecraft.Model
     /// </summary>
     /// <remarks>This generates a world with the following rules:
     /// At Y=0 is a solid layer of bedrock
-    /// At Y=70 is a solid layer of grass
-    /// Between these two layers is Stone and random ores</remarks>
+    /// At Y=15 is a solid layer of grass
+    /// Between these two layers is dirt</remarks>
     public class DefaultGenerator : IWorldGenerator
     {
         /// <summary>
@@ -57,6 +57,8 @@ namespace LibMinecraft.Model
                                 mc.SetBlock(new Vector3(x, y, z), new DirtBlock());
                             mc.SetBlock(new Vector3(x, 0, z), new BedrockBlock());
                         }
+                    Vector3 location = Vector3.Abs(mc.Location.Clone()).Clamp(15);
+                    mc.SetBlock(new Vector3(location.X, 16, location.Z), new GlassBlock());
                     break;
             }
 

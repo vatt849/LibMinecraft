@@ -67,7 +67,7 @@ namespace ServerTest
                 {
                     server.Port = int.Parse(input.Substring(6));
                     service = new MultiplayerServer(server);
-                    Level level = new Level(new DefaultGenerator());
+                    Level level = new Level(new DebugGenerator());
                     level.Save("world", service);
                     service.AddLevel(level);
                     Block.OverrideBlock(new TestDirt());

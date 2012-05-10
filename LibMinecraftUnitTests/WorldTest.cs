@@ -108,7 +108,7 @@ namespace LibMinecraftUnitTests
         [TestMethod()]
         public void AnvilSaveTest()
         {
-            Level level = new Level(new DefaultGenerator());
+            Level level = new Level(new DebugGenerator());
             // Generate some columns
             for (int x = -5; x < 5; x++)
             {
@@ -119,7 +119,6 @@ namespace LibMinecraftUnitTests
                     level.TheEnd.GenerateColumn(new Vector3(x, 0, z));
                 }
             }
-            level.SetBlock(new Vector3(10, 20, 10), new DiamondBlock());
 
             MultiplayerServer mserver = new MultiplayerServer(new MinecraftServer());
             level.Save("world", mserver);

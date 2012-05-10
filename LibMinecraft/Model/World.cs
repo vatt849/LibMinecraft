@@ -77,21 +77,6 @@ namespace LibMinecraft.Model
             }
         }
 
-        /// <summary>
-        /// (Re)generates a given column.  This does not update
-        /// any connected clients on a server.
-        /// </summary>
-        /// <param name="Location"></param>
-        public void GenerateColumn(Vector3 Location)
-        {
-            Vector3 temp = Location.Clone();
-            Region r = GetRegion(Location);
-            if (!RegionsToSave.Contains(r.Location))
-                RegionsToSave.Add(r.Location);
-            Location -= (r.Location * new Vector3(Region.Width, 1, Region.Depth));
-            r.GenerateColumn(Location);
-        }
-
         public void AddEntity(Entity Entity)
         {
             this.Entities.Add(Entity);
@@ -206,6 +191,21 @@ namespace LibMinecraft.Model
 
             b = this.GetBlock(location + Vector3.Backward);
             b.BlockUpdate(this, location + Vector3.Backward);
+        }
+
+        /// <summary>
+        /// (Re)generates a given column.  This does not update
+        /// any connected clients on a server.
+        /// </summary>
+        /// <param name="Location"></param>
+        public void GenerateColumn(Vector3 Location)
+        {
+            Vector3 temp = Location.Clone();
+            Region r = GetRegion(Location);
+            if (!RegionsToSave.Contains(r.Location))
+                RegionsToSave.Add(r.Location);
+            Location -= (r.Location * new Vector3(Region.Width, 1, Region.Depth));
+            r.GenerateColumn(Location);
         }
 
         public MapColumn GetColumn(Vector3 position)

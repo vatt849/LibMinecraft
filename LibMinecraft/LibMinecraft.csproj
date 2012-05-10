@@ -186,6 +186,7 @@
     <Compile Include="Model\Blocks\WoolBlock.cs" />
     <Compile Include="Model\ChatEventArgs.cs" />
     <Compile Include="Model\Blocks\BlockData.cs" />
+    <Compile Include="Model\DebugGenerator.cs" />
     <Compile Include="Model\DefaultGenerator.cs" />
     <Compile Include="Model\Entities\FallingEnderDragonEggEntity.cs" />
     <Compile Include="Model\Entities\FallingGravelEntity.cs" />
